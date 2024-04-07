@@ -22,24 +22,9 @@ const routes = [
     children: [
       // WelcomPage
       {
-        path: 'welcomPage',
-        component: () => import('../views/home/WelcomPage.vue'),
-        name: 'WelcomPage'
-      },
-      {
-        path: 'orderList',
-        component: () => import('../views/business/orderlist/OrderList.vue'),
-        name: 'OrderList'
-      },
-      {
-        path: 'aboutPage',
-        component: () => import('../views/home/AboutPage.vue'),
-        name: 'AboutPage'
-      },
-      {
-        path: 'report',
-        component: () => import('../views/business/report/Report.vue'),
-        name: 'Report'
+        path: 'home',
+        component: () => import('../views/home/Home.vue'),
+        name: 'home'
       },
       {
         path: 'config',

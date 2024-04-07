@@ -38,8 +38,8 @@ let mainWindow = null;
 app.on('ready', () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 1100,
-    height: 600,
+    width: 1300,
+    height: 800,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -67,7 +67,7 @@ app.on('ready', () => {
     } else {
       // 太几把坑了，windows系统setSize center方法失效 必须先mainWindow.unmaximize()
       mainWindow.unmaximize()
-      mainWindow.setSize(1100, 600);
+      mainWindow.setSize(1300, 800);
       mainWindow.center();
       global.sharedObject.userInfo = {}
       // mainWindow.setResizable(false)
@@ -130,6 +130,10 @@ app.on('ready', () => {
       }
     })
   });
+  ipcMain.on('request-printers', (event) => {
+    const printers = mainWindow.webContents.getPrinters();
+    event.reply('get-printers', printers);
+  });
   if (process.env.NODE_ENV === 'development') {
     let revert = false;
     setInterval(() => {
@@ -161,7 +165,7 @@ app.on('ready', () => {
     mainWindow.isFullScreen() ? mainWindow.setFullScreen(false) : mainWindow.setFullScreen(true);
   })
   // 程序启动时判断是否存在报表、日志等本地文件夹，没有就创建
-  createFile('lablePrint.grf');
+  createFile('labelPrint.grf');
 });
 
 function conPLC() {
@@ -242,7 +246,7 @@ function sendHeartToPLC() {
 
 function createFile(fileNameVal) {
   const sourcePath = path.join(__static, './report', fileNameVal);// 要复制的文件的路径=
-  const destinationPath = 'D://lable_temp_data/report'; // 目标文件夹的路径
+  const destinationPath = 'D://label_temp_data/report'; // 目标文件夹的路径
 
   // 检查源文件是否存在
   if (!fs.existsSync(sourcePath)) {
@@ -267,7 +271,7 @@ function createFile(fileNameVal) {
     }
   }
 
-  const destinationLogPath = 'D://lable_temp_data/log'; // 目标文件夹的路径
+  const destinationLogPath = 'D://label_temp_data/log'; // 目标文件夹的路径
 
   // 创建日志的文件夹
   if (!fs.existsSync(destinationLogPath)) {

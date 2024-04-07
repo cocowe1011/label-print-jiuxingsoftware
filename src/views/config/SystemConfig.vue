@@ -12,32 +12,6 @@
             <el-form-item label="端口：">
               <el-input v-model="cssConfig.plcPort" style="width: 250px;"></el-input>
             </el-form-item>
-            <el-divider content-position="left">束前传送带长度</el-divider>
-            <el-form-item label="L1-1长度(mm)：">
-              <el-input v-model="cssConfig.oneOneLength" style="width: 250px;"></el-input>
-            </el-form-item>
-            <el-form-item label="L2长度(mm)：">
-              <el-input v-model="cssConfig.twoLength" style="width: 250px;"></el-input>
-            </el-form-item>
-            <el-divider content-position="left">H-A点传送带长度</el-divider>
-            <el-form-item label="J长度(mm)：">
-              <el-input v-model="cssConfig.pointjLength" style="width: 250px;" type="number"></el-input>
-            </el-form-item>
-            <el-form-item label="K长度(mm)：">
-              <el-input v-model="cssConfig.pointkLength" style="width: 250px;" type="number"></el-input>
-            </el-form-item>
-            <el-form-item label="L长度(mm)：">
-              <el-input v-model="cssConfig.pointlLength" style="width: 250px;" type="number"></el-input>
-            </el-form-item>
-            <el-divider content-position="left">点位</el-divider>
-            <el-form-item label="判断禁止上货点位：">
-              <el-select v-model="cssConfig.judgeLoadPoint" style="width: 250px;">
-                <el-option label="光电D" value="D"></el-option>
-                <el-option label="光电E" value="E"></el-option>
-                <el-option label="光电F" value="F"></el-option>
-                <el-option label="光电H" value="H"></el-option>
-              </el-select>
-            </el-form-item>
           </el-form>
         </div>
       </div>
@@ -80,7 +54,7 @@ export default {
     getConfig() {
       this.loading = true
       // 查询配置
-      HttpUtil.get('/cssConfig/getConfig').then((res)=> {
+      HttpUtil.get('/labelConfig/getConfig').then((res)=> {
         this.cssConfig = res.data;
         this.configId = res.data.configId;
         this.loading = false
@@ -97,18 +71,6 @@ export default {
       }
       if(this.cssConfig.plcPort === '' || this.cssConfig.plcPort === null || this.cssConfig.plcPort === undefined) {
         this.$message.error('PLC端口不可保存为空值！');
-        return false
-      }
-      if(this.cssConfig.oneOneLength === '' || this.cssConfig.oneOneLength === null || this.cssConfig.oneOneLength === undefined) {
-        this.$message.error('L1-1长度不可保存为空值！');
-        return false
-      }
-      if(this.cssConfig.twoLength === '' || this.cssConfig.twoLength === null || this.cssConfig.twoLength === undefined) {
-        this.$message.error('L2长度不可保存为空值！');
-        return false
-      }
-      if(this.cssConfig.judgeLoadPoint === '' || this.cssConfig.judgeLoadPoint === null || this.cssConfig.judgeLoadPoint === undefined) {
-        this.$message.error('禁止上货判断点不可保存为空值！');
         return false
       }
       this.cssConfig.configId = this.configId;
@@ -139,7 +101,7 @@ export default {
 .config {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 15px;
   box-sizing: border-box;
   > div {
     width: 100%;

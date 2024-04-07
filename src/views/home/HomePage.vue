@@ -5,17 +5,14 @@
         <div class="maskDiv-top-left">
           <img src="../../../build/icons/64x64.png" style="width:38px;height:38px;" />
           <div style="margin-left:10px;height:100%;">
-            <div class="maskDiv-top-left-top-title">全自动束下输送系统</div>
-            <div class="maskDiv-top-left-top-title2">ccs</div>
+            <div class="maskDiv-top-left-top-title">标签打印系统</div>
+            <div class="maskDiv-top-left-top-title2">labelprint</div>
           </div>
         </div>
         <div class="maskDiv-top-mid">
           <el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
             <el-menu-item index="1">首页</el-menu-item>
-            <el-menu-item index="2">业务处理</el-menu-item>
-            <el-menu-item index="3">报表管理</el-menu-item>
-            <el-menu-item index="4">配置管理</el-menu-item>
-            <el-menu-item index="5">关于</el-menu-item>
+            <el-menu-item index="2">设置</el-menu-item>
           </el-menu>
         </div>
         <div class="version-view">
@@ -101,45 +98,18 @@ export default {
         // welcomPage
         case '1':
           this.$nextTick(() => {
-            if (this.$route.path !== '/homePage/welcomPage') {
+            if (this.$route.path !== '/homePage/home') {
               this.$router.replace({
-                path: '/homePage/welcomPage'
+                path: '/homePage/home'
               });
             }
           });
           break;
         case '2':
           this.$nextTick(() => {
-            if (this.$route.path !== '/homePage/orderList') {
-              this.$router.replace({
-                path: '/homePage/orderList'
-              });
-            }
-          });
-          break;
-        case '3':
-          this.$nextTick(() => {
-            if (this.$route.path !== '/homePage/report') {
-              this.$router.replace({
-                path: '/homePage/report'
-              });
-            }
-          });
-          break;
-        case '4':
-          this.$nextTick(() => {
             if (this.$route.path !== '/homePage/config') {
               this.$router.replace({
                 path: '/homePage/config'
-              });
-            }
-          });
-          break;
-        case '5':
-          this.$nextTick(() => {
-            if (this.$route.path !== '/homePage/aboutPage') {
-              this.$router.replace({
-                path: '/homePage/aboutPage'
               });
             }
           });
@@ -268,8 +238,8 @@ export default {
   },
   created() {
     // 给主进程发送消息，更改窗口大小，设置最小大小，默认全屏
-    ipcRenderer.send('logStatus','login');
-    this.changeIcon()
+    // ipcRenderer.send('logStatus','login');
+    // this.changeIcon()
   },
   mounted() {
   }

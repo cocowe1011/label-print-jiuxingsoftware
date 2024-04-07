@@ -1,38 +1,36 @@
 <template>
   <div class="login">
-    <div class="login-left">
-      <img src="./img/imgs_register.png" alt="免费注册">
-    </div>
     <div class="login-right">
       <div class="login-right-top">
-        <div class="login-right-top-left"></div>
-        <div class="login-right-top-min" style="z-index: 12;" @click="minWindow"><i class="el-icon-minus" style="font-size:18px;font-weight:600;"></i></div>
-        <div class="login-right-top-close" style="z-index: 12;" @click="closewindow"><i class="el-icon-close" style="font-size:18px;font-weight:600;"></i></div>
+        <div class="login-right-top-left" style="color: white;font-size: 16px;">九星标签打印系统v1.0</div>
+        <div class="login-right-top-min" style="z-index: 12;" @click="minWindow"><i class="el-icon-minus" style="font-size:18px;font-weight:600;color:white;"></i></div>
+        <div class="login-right-top-close" style="z-index: 12;" @click="closewindow"><i class="el-icon-close" style="font-size:18px;font-weight:600;color:white;"></i></div>
       </div>
-      <div class="login-right-down" v-if="pageMark == 'login'">
-        <p class="title">全自动束下输送CCS系统</p>
-        <p class="intro">欢迎使用全自动束下输送系统。简洁、易用的操作页面，全自动化管理全力帮助您提高效率。</p>
-        <div class="login-form">
-          <el-input placeholder="请输入用户名" class="user-code" v-model="userCode"></el-input>
-          <el-input placeholder="请输入密码" class="user-password" type="password" v-model="userPassword" autocomplete="off"></el-input>
-          <p class="tips">没有帐户？<span id="look-help" @click="registerPage">立即注册</span><span style="margin-left:185px;">忘记密码?</span> </p>
-          <el-button class="user-login-button" type="primary" @click="login" :loading="loadingStatus">立即登录</el-button>
+      <div class="login-right-down">
+        <div class="login-model" v-if="pageMark == 'login'" :style="{height: pageMark == 'login' ? '350px': '390px'}">
+          <div class="login-text">账号登录</div>
+          <div class="login-form">
+            <el-input placeholder="请输入用户名" class="user-code" v-model="userCode"></el-input>
+            <el-input placeholder="请输入密码" class="user-password" type="password" v-model="userPassword" autocomplete="off"></el-input>
+            <p class="tips">没有帐户？<span id="look-help" @click="registerPage">立即注册</span><span style="margin-left:243px;">忘记密码?</span> </p>
+            <el-button class="user-login-button" type="primary" @click="login" :loading="loadingStatus">立即登录</el-button>
+          </div>
         </div>
-      </div>
-      <div class="login-right-down" v-else-if="pageMark == 'register'">
-        <p class="title" style="text-align: center;">创建账户</p>
-        <p class="intro" style="width: 100%;text-align: center;">已有帐户？<span id="look-help" @click="loginPage">登录</span></p>
-        <div class="login-form">
-          <el-input placeholder="请输入姓名" ref="userNameRegRef" class="user-code-register" v-model="userNameReg" @blur="showUserNameTips = false" @focus="showUserNameTips = true"></el-input>
-          <p class="tips" style="margin-bottom: 0;line-height: 3px;" v-show="showUserNameTips">登录人姓名，用于记录订单操作人。</p>
-          <el-input placeholder="请输入注册账号" ref="userCodeRegRef" class="user-code-register" v-model="userCodeReg" style="margin-top: 15px;" @blur="showUserCodeTips = false" @focus="showUserCodeTips = true" @input="restrictInput"></el-input>
-          <p class="tips" style="margin-bottom: 0;line-height: 3px;" v-show="showUserCodeTips">注册账号为数字字母下划线，用于登录系统</p>
-          <el-input placeholder="请输入密码" class="user-password-register" type="password" v-model="userPasswordReg" autocomplete="off" style="margin-top: 15px;"></el-input>
-          <el-input placeholder="确认密码" ref="userPasswordAgainRef" class="user-password-register" type="password" v-model="userPasswordAgain" autocomplete="off" style="margin-top: 15px;"></el-input>
-          <el-button class="user-login-button" type="primary" @click="registerUser" :loading="registerStatus" style="margin-top: 15px;">立即注册</el-button>
+        <div class="login-model" v-else-if="pageMark == 'register'">
+          <div class="login-text">创建账号</div>
+          <p class="intro" style="width: 100%;text-align: center;">已有帐户？<span id="look-help" @click="loginPage">登录</span></p>
+          <div class="login-form">
+            <el-input placeholder="请输入姓名" ref="userNameRegRef" class="user-code-register" v-model="userNameReg" @blur="showUserNameTips = false" @focus="showUserNameTips = true"></el-input>
+            <p class="tips" style="margin-bottom: 0;line-height: 3px;" v-show="showUserNameTips">登录人姓名，用于记录订单操作人。</p>
+            <el-input placeholder="请输入注册账号" ref="userCodeRegRef" class="user-code-register" v-model="userCodeReg" style="margin-top: 15px;" @blur="showUserCodeTips = false" @focus="showUserCodeTips = true" @input="restrictInput"></el-input>
+            <p class="tips" style="margin-bottom: 0;line-height: 3px;" v-show="showUserCodeTips">注册账号为数字字母下划线，用于登录系统</p>
+            <el-input placeholder="请输入密码" class="user-password-register" type="password" v-model="userPasswordReg" autocomplete="off" style="margin-top: 15px;"></el-input>
+            <el-input placeholder="确认密码" ref="userPasswordAgainRef" class="user-password-register" type="password" v-model="userPasswordAgain" autocomplete="off" style="margin-top: 15px;"></el-input>
+            <el-button class="user-login-button" type="primary" @click="registerUser" :loading="registerStatus" style="margin-top: 15px;">立即注册</el-button>
+          </div>
         </div>
-      </div>
-      <div class="login-right-down" v-else>
+        <div class="login-model" v-else>
+        </div>
       </div>
     </div>
     <transition name="fade">
@@ -164,7 +162,7 @@ export default {
             // 跳转主页
             this.$nextTick(() => {
               this.$router.replace({
-                path: '/homePage/welcomPage'
+                path: '/homePage/home'
               });
             });
           }, 2000);
@@ -230,22 +228,10 @@ export default {
   width: 100%;
   height: 100%;
   display: flex;
-  &-left {
-    pointer-events: none;
-    -webkit-app-region: drag;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #FBFCFD;
-    img {
-      width: 690px;
-      height: 546px;
-    }
-  }
+  background: linear-gradient(to bottom left,#85d2e2,#85e1f6,#c8dfa8,#877fcb,#7a6ec0,#2f2c61,#323165);
   &-right {
-    width: calc(100% - 690px);
+    width: 100%;
     height: 100%;
-    padding-left: 28px;
     &-top {
       height:45px;
       width:100%;
@@ -278,13 +264,10 @@ export default {
     }
     &-down {
       width: 100%;
-      margin-top: 75px;
-      .title {
-        font-weight: 400;
-        font-size: 32px;
-        line-height: 25px;
-        color: #262626;
-      }
+      height: calc(100% - 75px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
       .intro {
         width: 332px;
         font-weight: 400;
@@ -297,39 +280,67 @@ export default {
           cursor: pointer;
         }
       }
-      .login-form {
-        padding: 20px 30px 20px 0px;
-        ::v-deep .user-code{
-          .el-input__inner {
-            height:45px;
-            margin-bottom:30px;
-            font-size:14px !important;
-            color: #000;
-          }
-        }
-        ::v-deep .user-password{
-          .el-input__inner {
-            height:45px;
-            font-size:14px !important;
-            color: #000;
-            margin-bottom: 2px;
-          }
-        }
-        .user-login-button {
-          height: 43px;
-          border-radius: 2px;
-          font-size: 16px;
+      .login-model {
+        width: 450px;
+        height: 390px;
+        background-color: #fff;
+        // float: right;
+        border-radius: 15px;
+        box-shadow: 0 5px 10px 10px rgb(0 0 0 / 10%);
+        transition: height 0.2s ease-in-out;
+        // padding: 20px;
+        .login-title {
           width: 100%;
+          height: 80px;
+          line-height: 80px;
+          text-align: center;
+          color: #000;
+          font-size: 30px;
+          font-weight: 700;
         }
-        .tips {
-          font-weight: 400;
-          font-size: 12px;
-          line-height: 18px;
-          color: #8c8c8c;
-          margin-bottom: 36px;
-          span {
-            color: #4385ff;
-            cursor: pointer;
+        .login-text {
+          width: 100%;
+          height: 80px;
+          line-height: 80px;
+          text-align: center;
+          color: #000;
+          font-size: 27px;
+          font-weight: 700;
+          // padding-top: 65px;
+        }
+        .login-form {
+          padding: 0px 20px 0px 20px;
+          ::v-deep .user-code{
+            .el-input__inner {
+              height:50px;
+              margin-bottom:28px;
+              font-size:16px !important;
+              color: #000;
+            }
+          }
+          ::v-deep .user-password{
+            .el-input__inner {
+              height:50px;
+              font-size:16px !important;
+              color: #000;
+            }
+          }
+          .user-login-button {
+            height: 50px;
+            border-radius: 10px;
+            font-size: 18px;
+            width: 100%;
+          }
+          .tips {
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 18px;
+            color: #8c8c8c;
+            margin-bottom: 30px;
+            span {
+              color: #4385ff;
+              cursor: pointer;
+            }
           }
         }
       }
