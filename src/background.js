@@ -17,6 +17,7 @@ logger.transports.file.file = app.getPath("userData") + "/app.log";
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const net = require('net');
 var appTray = null;
 let closeStatus = false;
 var conn = new nodes7;
@@ -166,6 +167,24 @@ app.on('ready', () => {
   })
   // 程序启动时判断是否存在报表、日志等本地文件夹，没有就创建
   createFile('labelPrint.grf');
+  // 创建 Socket 服务端
+  const server = net.createServer((socket) => {
+    console.log('Client connected');
+    socket.on('data', (data) => {
+      console.log(`Data received from client: ${data}`);
+      mainWindow.webContents.send('getWeightJson', JSON.parse(data));
+      // socket.write('Hello, client.'); // 向客户端发送响应
+    });
+    socket.on('end', () => {
+      console.log('Client disconnected');
+    });
+    socket.on('error', (error) => {
+        console.error(`Error: ${error}`);
+      });
+    });
+  server.listen(2000, () => {
+    console.log('Server listening on port 8124');
+  });
 });
 
 function conPLC() {

@@ -35,6 +35,7 @@
       </div>
       <div class="home-right">
         <el-divider content-position="left">订单信息</el-divider>
+        <span>当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
       </div>
     </div>
   </div>
@@ -54,7 +55,9 @@ export default {
       printerName: '',
       grfPath: 'D://label_temp_data/report/labelPrint.grf',
       imageSrc: '',
-      machineName: '机台1'
+      machineName: '机台1',
+      printObj: {"Master":[]},
+      printNum: 0
     };
   },
   watch: {},
@@ -66,14 +69,42 @@ export default {
     updateImgSrc() {
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
     },
-    testPrint() {
-      const printObj = {"Master":[{OUT_CARD_NO:new Date().getTime(), SAMP_CODE: new Date().getTime()}]}
+    printLable() {
+      var args = {
+        type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
+        // type: "pdf",
+        report: grwebapp.urlAddRandomNo(this.grfPath),
+        //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
+        data: this.printObj,
+        PrinterName: this.printerName, //指定要输出的打印机名称
+        showOptionDlg: false,
+      };
+      grwebapp.webapp_ws_ajax_run(args);
+    },
+    testPrint(param) {
+      this.printNum++;
+      const obj = [{
+        customer: '乐泰药业（兰西）有限公司',
+        customerName: '12gX3袋亮甲牌肤泰杀菌粉小盒 2312版',
+        orderNumber: 'CGJH1-102-X-SC231205-10',
+        customerNumber: '202404080001A',
+        customerMaterialNumber: 'LXSIF1203-2023121101',
+        ccodeScproduct: 'BX2024010089',
+        ccodeScaproduc: '0101001550',
+        namount: '1000',
+        machine: '06/乙',
+        qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
+        index: this.printNum,
+        weight: param.weight,
+        inspection: '合格/QC05'
+      }]
+      this.printObj.Master = obj;
       var args = {
         type: "img", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
         // type: "pdf",
         report: grwebapp.urlAddRandomNo(this.grfPath),
         //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
-        data: printObj,
+        data: this.printObj,
         showOptionDlg: false,  //指定不显示导出选项对话框
         ImageType: 'png',
         DPI: 288,
@@ -82,7 +113,8 @@ export default {
       };
       grwebapp.webapp_ws_ajax_run(args);
       setTimeout(() => {
-        this.updateImgSrc()
+        this.updateImgSrc();
+        this.printLable(param);
       }, 500);
     },
     runPrint() {
@@ -103,6 +135,9 @@ export default {
       console.log(this.printers)
     });
     ipcRenderer.send('request-printers');
+    ipcRenderer.on('getWeightJson', (event, obj) => {
+      this.testPrint(obj)
+    })
   }
 };
 </script>
