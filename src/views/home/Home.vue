@@ -10,15 +10,16 @@
             <el-option label="机台2" value="机台2" />
           </el-select>
           <span style="margin-left: 20px;">运行状态：<span style="color: #67c23a;margin-left: 3px;"><i class="el-icon-loading"></i>运行中</span></span>
+          <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
         </div>
         <el-divider content-position="left">标签打印</el-divider>
         <div class="button-content" style="display: flex;align-items: center;">
           <el-button type="primary" icon="el-icon-switch-button" size="medium" :loading="runStatus" @click="runPrint">启动打印</el-button>
           <el-button type="danger" icon="el-icon-close" size="medium" @click="stopPrint">停止</el-button>
-          <el-button type="primary" size="medium" @click="testPrint">测试</el-button>
+          <el-button size="medium">标签设计</el-button>
           <span style="margin-left: 50px;">选择打印机：</span>
-          <el-select v-model="printerName" placeholder="请选择" style="width: 300px;">
+          <el-select v-model="printerName" @change="changePrinterName" placeholder="请选择" style="width: 300px;">
             <el-option
               v-for="(item, index) in printers"
               :key="index"
@@ -26,6 +27,7 @@
               :value="item.displayName">
             </el-option>
           </el-select>
+          <el-button type="primary" size="medium" @click="testPrint" style="margin-left: 15px;">测试打印</el-button>
         </div>
         <el-divider content-position="left">标签预览</el-divider>
         <div style="width: 100%; height: calc(100% - 158px);display: flex; align-items: center; justify-content: center;">
@@ -34,8 +36,24 @@
         </div>
       </div>
       <div class="home-right">
-        <el-divider content-position="left">订单信息</el-divider>
-        <span>当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
+        <el-divider content-position="left">当前订单信息</el-divider>
+        <el-descriptions style="margin-top:20px;" :column="1" size="medium" border>
+          <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct }}</el-descriptions-item>
+          <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct }}</el-descriptions-item>
+          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduc }}</el-descriptions-item>
+          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduc }}</el-descriptions-item>
+          <el-descriptions-item label="客户名称">{{ nowOrderObj.customer }}</el-descriptions-item>
+          <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName }}</el-descriptions-item>
+          <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber }}</el-descriptions-item>
+          <el-descriptions-item label="客户批号">{{ nowOrderObj.customerNumber }}</el-descriptions-item>
+          <el-descriptions-item label="客户料号">{{ nowOrderObj.customerMaterialNumber }}</el-descriptions-item>
+          <el-descriptions-item label="外箱长度">{{ nowOrderObj.length }}</el-descriptions-item>
+          <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width }}</el-descriptions-item>
+          <el-descriptions-item label="外箱高度">{{ nowOrderObj.height }}</el-descriptions-item>
+          <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount }}</el-descriptions-item>
+          <el-descriptions-item label="箱序号">{{ nowOrderObj.index }}</el-descriptions-item>
+          <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange }}</el-descriptions-item>
+        </el-descriptions>
       </div>
     </div>
   </div>
@@ -60,7 +78,8 @@ export default {
       machineList: [],
       printObj: {"Master":[]},
       printNum: 0,
-      configData: null
+      configData: {},
+      nowOrderObj: {} // 当前展示的订单信息
     };
   },
   watch: {},
@@ -129,8 +148,15 @@ export default {
       this.runStatus = false
       this.$message.success('已停止！')
     },
-    selectMachine(value) {
-      this.updateData({"machineName": value})
+    async selectMachine(value) {
+      const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+      obj.machineName = value;
+      this.updateData(obj)
+    },
+    async changePrinterName(value) {
+      const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+      obj.printerName = value;
+      this.updateData(obj)
     },
     getMachineList() {
       this.machineList = []
@@ -145,9 +171,8 @@ export default {
     async loadData() {
       try {
         this.configData = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-        console.log(this.configData)
         this.machineName = this.configData.machineName
-        console.log(this.machineName)
+        this.printerName = this.configData.printerName
       } catch (error) {
         console.error('Error:', error)
       }
@@ -155,17 +180,32 @@ export default {
     async updateData(data) {
       try {
         await ipcRenderer.invoke('update-config-file', data)
-        this.$message.success('设置机台成功！')
+        this.$message.success('设置成功！')
       } catch (error) {
         console.error('Error:', error)
       }
+    },
+    getPrintInfo() {
+      // 查询按照箱编号正序排序的第一个订单信息
+      HttpUtil.post('/order/getOrderBoxInfo', {}).then((res)=> {
+        if(res.data) {
+          this.nowOrderObj = res.data
+        } else {
+          this.nowOrderObj = {}
+        }
+      }).catch((err)=> {
+        this.$message.error('查询订单信息出错！稍后自动重试！');
+      });
     }
   },
   created() {
     grwebapp.webapp_urlprotocol_startup();
     // 查询机台信息
     this.getMachineList();
-    this.loadData()
+    // 加载机台和打印机配置
+    this.loadData();
+    // 查询当前打印订单信息
+    this.getPrintInfo();
   },
   mounted() {
     ipcRenderer.on('get-printers', (event, printers) => {
@@ -195,7 +235,7 @@ export default {
     position: relative;
     display: flex;
     .home-left {
-      width: calc(100% - 300px);
+      width: calc(100% - 350px);
       height: 100%;
       box-sizing: border-box;
       padding: 15px;
@@ -205,7 +245,7 @@ export default {
       }
     }
     .home-right {
-      width: 300px;
+      width: 350px;
       height: 100%;
       border-left: 1px #DCDFE6 solid;
       box-sizing: border-box;
@@ -214,6 +254,13 @@ export default {
     ::v-deep {
       .el-divider--horizontal {
         margin: 10px 0;
+      }
+      .el-descriptions-item__label.is-bordered-label {
+        width: 120px;
+        font-weight: 650 !important;
+      }
+      .el-descriptions-item__content {
+        font-weight: 650 !important;
       }
     }
   }
