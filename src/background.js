@@ -183,8 +183,19 @@ app.on('ready', () => {
       });
     });
   server.listen(2000, () => {
-    console.log('Server listening on port 8124');
+    console.log('Server listening on port 2000');
   });
+  ipcMain.handle('read-config-file', async (event, arg) => {
+    if(!fs.existsSync("D://label_temp_data/config/config.json")){
+      fs.writeFile("D://label_temp_data/config/config.json", JSON.stringify({}), function(err) {});
+      return {};
+    };
+    return await fs.readFileSync("D://label_temp_data/config/config.json", 'utf8');
+  })
+  
+  ipcMain.handle('update-config-file', async (event, arg) => {
+    await fs.writeFileSync("D://label_temp_data/config/config.json", JSON.stringify(arg))
+  })
 });
 
 function conPLC() {
@@ -296,6 +307,19 @@ function createFile(fileNameVal) {
   if (!fs.existsSync(destinationLogPath)) {
     try {
       fs.mkdirSync(destinationLogPath, { recursive: true });
+      console.log('目标文件夹已成功创建');
+    } catch (err) {
+      console.error('创建目标文件夹时出现错误：', err);
+      return;
+    }
+  }
+
+  const destinationSetPath = 'D://label_temp_data/config'; // 目标文件夹的路径
+
+  // 创建日志的文件夹
+  if (!fs.existsSync(destinationSetPath)) {
+    try {
+      fs.mkdirSync(destinationSetPath, { recursive: true });
       console.log('目标文件夹已成功创建');
     } catch (err) {
       console.error('创建目标文件夹时出现错误：', err);

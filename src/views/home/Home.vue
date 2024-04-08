@@ -5,7 +5,7 @@
         <el-divider content-position="left">机台信息</el-divider>
         <div class="button-content" style="display: flex;align-items: center;">
           <span>当前机台为：</span>
-          <el-select v-model="machineName" placeholder="请选择" style="width: 150px;">
+          <el-select v-model="machineName" @change="selectMachine" placeholder="请选择" style="width: 150px;">
             <el-option label="机台1" value="机台1" />
             <el-option label="机台2" value="机台2" />
           </el-select>
@@ -44,6 +44,7 @@
 <script>
 import { Debugger, ipcRenderer } from 'electron'
 import grwebapp from '@/utils/grwebapp'
+import HttpUtil from '@/utils/HttpUtil'
 export default {
   name: "Home",
   components: {},
@@ -55,9 +56,11 @@ export default {
       printerName: '',
       grfPath: 'D://label_temp_data/report/labelPrint.grf',
       imageSrc: '',
-      machineName: '机台1',
+      machineName: '',
+      machineList: [],
       printObj: {"Master":[]},
-      printNum: 0
+      printNum: 0,
+      configData: null
     };
   },
   watch: {},
@@ -65,6 +68,7 @@ export default {
   methods: {
     refresh(){
       // 重新查询订单信息
+      this.getMachineList();
     },
     updateImgSrc() {
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
@@ -124,10 +128,44 @@ export default {
     stopPrint() {
       this.runStatus = false
       this.$message.success('已停止！')
+    },
+    selectMachine(value) {
+      this.updateData({"machineName": value})
+    },
+    getMachineList() {
+      this.machineList = []
+      HttpUtil.post('/order/getMachineList', {}).then((res)=> {
+        if(res.data&&res.data.length > 0) {
+          this.machineList = res.data
+        }
+      }).catch((err)=> {
+        this.$message.error('查询机台任务出错！请刷新重试！');
+      });
+    },
+    async loadData() {
+      try {
+        this.configData = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+        console.log(this.configData)
+        this.machineName = this.configData.machineName
+        console.log(this.machineName)
+      } catch (error) {
+        console.error('Error:', error)
+      }
+    },
+    async updateData(data) {
+      try {
+        await ipcRenderer.invoke('update-config-file', data)
+        this.$message.success('设置机台成功！')
+      } catch (error) {
+        console.error('Error:', error)
+      }
     }
   },
   created() {
     grwebapp.webapp_urlprotocol_startup();
+    // 查询机台信息
+    this.getMachineList();
+    this.loadData()
   },
   mounted() {
     ipcRenderer.on('get-printers', (event, printers) => {
