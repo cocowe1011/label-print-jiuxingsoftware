@@ -11,6 +11,7 @@
           </el-select>
           <span style="margin-left: 20px;">运行状态：<span style="color: #67c23a;margin-left: 3px;"><i class="el-icon-loading"></i>运行中</span></span>
           <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
+          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">打印历史</el-button>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
         </div>
         <el-divider content-position="left">标签打印</el-divider>
@@ -56,6 +57,13 @@
         </el-descriptions>
       </div>
     </div>
+    <el-drawer
+      title="我是标题"
+      :visible.sync="drawer"
+      :with-header="false"
+      size="70%">
+      <span>我来啦!</span>
+    </el-drawer>
   </div>
 </template>
 
@@ -78,7 +86,8 @@ export default {
       machineList: [],
       printNum: 0,
       configData: {},
-      nowOrderObj: {} // 当前展示的订单信息
+      nowOrderObj: {}, // 当前展示的订单信息
+      drawer: true
     };
   },
   watch: {},
@@ -92,30 +101,38 @@ export default {
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
     },
     testPrint() {},
-    printLable(weight) {
+    async printLable(weight) {
       const printObj = {"Master":[]};
       this.nowOrderObj.weight = weight
       printObj.Master = this.nowOrderObj;
-      var args = {
-        type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
-        // type: "pdf",
-        report: grwebapp.urlAddRandomNo(this.grfPath),
-        //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
-        data: printObj,
-        PrinterName: this.printerName, //指定要输出的打印机名称
-        showOptionDlg: false,
-      };
-      grwebapp.webapp_ws_ajax_run(args);
+      // var args = {
+      //   type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
+      //   // type: "pdf",
+      //   report: grwebapp.urlAddRandomNo(this.grfPath),
+      //   //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
+      //   data: printObj,
+      //   PrinterName: this.printerName, //指定要输出的打印机名称
+      //   showOptionDlg: false,
+      // };
+      // grwebapp.webapp_ws_ajax_run(args);
+      console.log(this.nowOrderObj)
       // 更新这个订单的一些状态，然后反馈日志信息到中间表
-      this.dealAfterPrint(this.nowOrderObj)
+      await this.dealAfterPrint(this.nowOrderObj)
       // 马上查询下一个订单
       this.getPrintInfo();
     },
-    dealAfterPrint(obj) {
-      HttpUtil.post('/order/dealAfterPrint', {}).then((res)=> {
-
+    async dealAfterPrint(param) {
+      await HttpUtil.post('/order/dealAfterPrint', param).then((res)=> {
+        // 输出打印成功的日志
+        if(res.data>0) {
+          this.$message.success('已插入日志记录')
+        } else {
+          this.$message.error('日志插入失败！即将重新打印')
+        }
+        // 失败了给予失败提示
       }).catch((err)=> {
-
+        // 失败了给予失败提示
+        this.$message.error('日志插入失败！即将重新打印')
       });
     },
     showLabelImg(param) {
@@ -140,6 +157,10 @@ export default {
       }, 500);
     },
     runPrint() {
+      if(this.machineName === '') {
+        this.$message.error('请选择机台！')
+        return false;
+      }
       this.runStatus = true
       this.$message.success('已启动！')
     },
@@ -186,8 +207,9 @@ export default {
     },
     getPrintInfo() {
       // 查询按照箱编号正序排序的第一个订单信息
+      const param = {"machine": this.machineName}
       // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
-      HttpUtil.post('/order/getOrderBoxInfo', {}).then((res)=> {
+      HttpUtil.post('/order/getOrderBoxInfo', param).then((res)=> {
         if(res.data) {
           this.nowOrderObj = res.data
           this.nowOrderObj.machine = this.machineName
@@ -202,12 +224,12 @@ export default {
       });
     }
   },
-  created() {
+  async created() {
     grwebapp.webapp_urlprotocol_startup();
     // 查询机台信息
     this.getMachineList();
     // 加载机台和打印机配置
-    this.loadData();
+    await this.loadData();
     // 查询当前打印订单信息
     this.getPrintInfo();
   },
@@ -223,7 +245,7 @@ export default {
         if (Object.keys(this.nowOrderObj).length === 0 && this.nowOrderObj.constructor === Object) {
           this.$message.error('未查询到当前有可打印的订单信息！请刷新重试！')
         } else {
-          this.printLable(obj)
+          this.printLable(obj.weight)
         }
       } else {
         this.$message.error('收到体重,未开始打印,不允许打印！')
