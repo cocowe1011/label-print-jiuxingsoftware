@@ -38,21 +38,21 @@
       <div class="home-right">
         <el-divider content-position="left">当前订单信息</el-divider>
         <el-descriptions style="margin-top:20px;" :column="1" size="medium" border>
-          <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct }}</el-descriptions-item>
-          <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct }}</el-descriptions-item>
-          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduc }}</el-descriptions-item>
-          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduc }}</el-descriptions-item>
-          <el-descriptions-item label="客户名称">{{ nowOrderObj.customer }}</el-descriptions-item>
-          <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName }}</el-descriptions-item>
-          <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber }}</el-descriptions-item>
-          <el-descriptions-item label="客户批号">{{ nowOrderObj.customerNumber }}</el-descriptions-item>
-          <el-descriptions-item label="客户料号">{{ nowOrderObj.customerMaterialNumber }}</el-descriptions-item>
-          <el-descriptions-item label="外箱长度">{{ nowOrderObj.length }}</el-descriptions-item>
-          <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width }}</el-descriptions-item>
-          <el-descriptions-item label="外箱高度">{{ nowOrderObj.height }}</el-descriptions-item>
-          <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount }}</el-descriptions-item>
-          <el-descriptions-item label="箱序号">{{ nowOrderObj.index }}</el-descriptions-item>
-          <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange }}</el-descriptions-item>
+          <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct === undefined ? '未查询到可打印信息': nowOrderObj.idScproduct }}</el-descriptions-item>
+          <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScproduct }}</el-descriptions-item>
+          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduc === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScaproduc }}</el-descriptions-item>
+          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduc === undefined ? '未查询到可打印信息': nowOrderObj.cnameScaproduc }}</el-descriptions-item>
+          <el-descriptions-item label="客户名称">{{ nowOrderObj.customer === undefined ? '未查询到可打印信息': nowOrderObj.customer }}</el-descriptions-item>
+          <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName === undefined ? '未查询到可打印信息': nowOrderObj.customerName }}</el-descriptions-item>
+          <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber === undefined ? '未查询到可打印信息': nowOrderObj.orderNumber }}</el-descriptions-item>
+          <el-descriptions-item label="客户批号">{{ nowOrderObj.customerNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerNumber }}</el-descriptions-item>
+          <el-descriptions-item label="客户料号">{{ nowOrderObj.customerMaterialNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerMaterialNumber }}</el-descriptions-item>
+          <el-descriptions-item label="外箱长度">{{ nowOrderObj.length === undefined ? '未查询到可打印信息': nowOrderObj.length }}</el-descriptions-item>
+          <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width === undefined ? '未查询到可打印信息': nowOrderObj.width }}</el-descriptions-item>
+          <el-descriptions-item label="外箱高度">{{ nowOrderObj.height === undefined ? '未查询到可打印信息': nowOrderObj.height }}</el-descriptions-item>
+          <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount === undefined ? '未查询到可打印信息': nowOrderObj.namount }}</el-descriptions-item>
+          <el-descriptions-item label="箱序号">{{ nowOrderObj.index === undefined ? '未查询到可打印信息': nowOrderObj.index }}</el-descriptions-item>
+          <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange === undefined ? '未查询到可打印信息': nowOrderObj.dstatuschange }}</el-descriptions-item>
         </el-descriptions>
       </div>
     </div>
@@ -76,7 +76,6 @@ export default {
       imageSrc: '',
       machineName: '',
       machineList: [],
-      printObj: {"Master":[]},
       printNum: 0,
       configData: {},
       nowOrderObj: {} // 当前展示的订单信息
@@ -92,42 +91,43 @@ export default {
     updateImgSrc() {
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
     },
-    printLable() {
+    testPrint() {},
+    printLable(weight) {
+      const printObj = {"Master":[]};
+      this.nowOrderObj.weight = weight
+      printObj.Master = this.nowOrderObj;
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
         // type: "pdf",
         report: grwebapp.urlAddRandomNo(this.grfPath),
         //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
-        data: this.printObj,
+        data: printObj,
         PrinterName: this.printerName, //指定要输出的打印机名称
         showOptionDlg: false,
       };
       grwebapp.webapp_ws_ajax_run(args);
+      // 更新这个订单的一些状态，然后反馈日志信息到中间表
+      this.dealAfterPrint(this.nowOrderObj)
+      // 马上查询下一个订单
+      this.getPrintInfo();
     },
-    testPrint(param) {
-      this.printNum++;
-      const obj = [{
-        customer: '乐泰药业（兰西）有限公司',
-        customerName: '12gX3袋亮甲牌肤泰杀菌粉小盒 2312版',
-        orderNumber: 'CGJH1-102-X-SC231205-10',
-        customerNumber: '202404080001A',
-        customerMaterialNumber: 'LXSIF1203-2023121101',
-        ccodeScproduct: 'BX2024010089',
-        ccodeScaproduc: '0101001550',
-        namount: '1000',
-        machine: '06/乙',
-        qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
-        index: this.printNum,
-        weight: param.weight,
-        inspection: '合格/QC05'
-      }]
-      this.printObj.Master = obj;
+    dealAfterPrint(obj) {
+      HttpUtil.post('/order/dealAfterPrint', {}).then((res)=> {
+
+      }).catch((err)=> {
+
+      });
+    },
+    showLabelImg(param) {
+      const obj = [param]
+      const printObj = {"Master":[]};
+      printObj.Master = obj;
       var args = {
         type: "img", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
         // type: "pdf",
         report: grwebapp.urlAddRandomNo(this.grfPath),
         //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
-        data: this.printObj,
+        data: printObj,
         showOptionDlg: false,  //指定不显示导出选项对话框
         ImageType: 'png',
         DPI: 288,
@@ -137,7 +137,6 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
       setTimeout(() => {
         this.updateImgSrc();
-        this.printLable(param);
       }, 500);
     },
     runPrint() {
@@ -187,12 +186,17 @@ export default {
     },
     getPrintInfo() {
       // 查询按照箱编号正序排序的第一个订单信息
+      // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
       HttpUtil.post('/order/getOrderBoxInfo', {}).then((res)=> {
         if(res.data) {
           this.nowOrderObj = res.data
+          this.nowOrderObj.machine = this.machineName
         } else {
+          // 没有订单可打印了，展示空白即可
           this.nowOrderObj = {}
         }
+        // 展示图片
+        this.showLabelImg(this.nowOrderObj);
       }).catch((err)=> {
         this.$message.error('查询订单信息出错！稍后自动重试！');
       });
@@ -210,11 +214,20 @@ export default {
   mounted() {
     ipcRenderer.on('get-printers', (event, printers) => {
       this.printers = printers;
-      console.log(this.printers)
     });
     ipcRenderer.send('request-printers');
     ipcRenderer.on('getWeightJson', (event, obj) => {
-      this.testPrint(obj)
+      // 1、判断有没有开启打印按钮
+      if (this.runStatus) {
+        // 2、打印当前展示的标签，将标签打印，等待下一次体重的发送
+        if (Object.keys(this.nowOrderObj).length === 0 && this.nowOrderObj.constructor === Object) {
+          this.$message.error('未查询到当前有可打印的订单信息！请刷新重试！')
+        } else {
+          this.printLable(obj)
+        }
+      } else {
+        this.$message.error('收到体重,未开始打印,不允许打印！')
+      }
     })
   }
 };

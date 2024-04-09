@@ -40,7 +40,7 @@ app.on('ready', () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1350,
-    height: 800,
+    height: 820,
     frame: false,
     webPreferences: {
       nodeIntegration: true,
@@ -68,7 +68,7 @@ app.on('ready', () => {
     } else {
       // 太几把坑了，windows系统setSize center方法失效 必须先mainWindow.unmaximize()
       mainWindow.unmaximize()
-      mainWindow.setSize(1350, 800);
+      mainWindow.setSize(1350, 820);
       mainWindow.center();
       global.sharedObject.userInfo = {}
       // mainWindow.setResizable(false)
