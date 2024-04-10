@@ -63,15 +63,14 @@ app.on('ready', () => {
   ipcMain.on('logStatus', (event, arg) => {
     console.log(arg)
     if(arg === 'login') {
+      // 此程序无需登录后全屏，这一块不会走
       mainWindow.setResizable(true)
       mainWindow.setBounds({ x: 0, y: 0, width: screen.getPrimaryDisplay().workAreaSize.width, height: screen.getPrimaryDisplay().workAreaSize.height });
     } else {
       // 太几把坑了，windows系统setSize center方法失效 必须先mainWindow.unmaximize()
       mainWindow.unmaximize()
-      mainWindow.setSize(1350, 820);
       mainWindow.center();
       global.sharedObject.userInfo = {}
-      // mainWindow.setResizable(false)
     }
   })
   // 定义自定义事件
@@ -92,7 +91,7 @@ app.on('ready', () => {
       return mainWindow.maximize()
     }
     mainWindow.unmaximize()
-    mainWindow.setBounds({ x: 10, y: 10, width: screen.getPrimaryDisplay().workAreaSize.width - 20, height: screen.getPrimaryDisplay().workAreaSize.height - 20 });
+    mainWindow.center();
   })
   // 启动plc conPLC
   ipcMain.on('conPLC', (event, arg1, arg2) => {

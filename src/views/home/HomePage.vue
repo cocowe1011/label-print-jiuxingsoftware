@@ -81,7 +81,7 @@ export default {
   data() {
     return {
       activeIndex: '1',
-      windowSize: 'max-window',
+      windowSize: 'unmax-window',
       showLogout: true,
       dialogFormVisible: false,
       updatePasswordForm: {
@@ -238,8 +238,8 @@ export default {
   },
   created() {
     // 给主进程发送消息，更改窗口大小，设置最小大小，默认全屏
-    // ipcRenderer.send('logStatus','login');
-    // this.changeIcon()
+    // ipcRenderer.send('logStatus','login'); 此软件不需要 登录后全屏 注释掉代码
+    this.changeIcon()
   },
   mounted() {
   }

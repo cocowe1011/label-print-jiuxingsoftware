@@ -11,14 +11,14 @@
           </el-select>
           <span style="margin-left: 20px;">运行状态：<span style="color: #67c23a;margin-left: 3px;"><i class="el-icon-loading"></i>运行中</span></span>
           <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
-          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">打印历史</el-button>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
+          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">查看打印历史</el-button>
         </div>
         <el-divider content-position="left">标签打印</el-divider>
         <div class="button-content" style="display: flex;align-items: center;">
           <el-button type="primary" icon="el-icon-switch-button" size="medium" :loading="runStatus" @click="runPrint">启动打印</el-button>
           <el-button type="danger" icon="el-icon-close" size="medium" @click="stopPrint">停止</el-button>
-          <el-button size="medium">标签设计</el-button>
+          <el-button size="medium" @click="openReport(grfPath)" :loading="openBoxLoading">标签设计</el-button>
           <span style="margin-left: 50px;">选择打印机：</span>
           <el-select v-model="printerName" @change="changePrinterName" placeholder="请选择" style="width: 300px;">
             <el-option
@@ -57,13 +57,16 @@
         </el-descriptions>
       </div>
     </div>
-    <el-drawer
-      title="我是标题"
-      :visible.sync="drawer"
-      :with-header="false"
-      size="70%">
-      <span>我来啦!</span>
-    </el-drawer>
+    <el-dialog
+      title="查看打印历史"
+      :visible.sync="dialogVisible"
+      width="1200px"
+      :before-close="handleClose"
+      append-to-body
+      destroy-on-close
+      >
+      <ViewPrintLogList :machineName="machineName" v-if="dialogVisible"/>
+    </el-dialog>
   </div>
 </template>
 
@@ -71,9 +74,14 @@
 import { Debugger, ipcRenderer } from 'electron'
 import grwebapp from '@/utils/grwebapp'
 import HttpUtil from '@/utils/HttpUtil'
+import ViewPrintLogList from './ViewPrintLogList.vue'
+const { exec } = require('child_process');
+const os = require('os');
 export default {
   name: "Home",
-  components: {},
+  components: {
+    ViewPrintLogList
+  },
   props: {},
   data() {
     return {
@@ -87,34 +95,42 @@ export default {
       printNum: 0,
       configData: {},
       nowOrderObj: {}, // 当前展示的订单信息
-      drawer: true
+      dialogVisible: false,
+      openBoxLoading: false
     };
   },
   watch: {},
   computed: {},
   methods: {
+    showPrintHistory() {
+      this.dialogVisible = true
+    },
+    handleClose() {
+      this.dialogVisible = false
+    },
     refresh(){
       // 重新查询订单信息
       this.getMachineList();
     },
     updateImgSrc() {
+      console.log('展示图片')
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
     },
     testPrint() {},
     async printLable(weight) {
       const printObj = {"Master":[]};
       this.nowOrderObj.weight = weight
-      printObj.Master = this.nowOrderObj;
-      // var args = {
-      //   type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
-      //   // type: "pdf",
-      //   report: grwebapp.urlAddRandomNo(this.grfPath),
-      //   //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
-      //   data: printObj,
-      //   PrinterName: this.printerName, //指定要输出的打印机名称
-      //   showOptionDlg: false,
-      // };
-      // grwebapp.webapp_ws_ajax_run(args);
+      printObj.Master = [this.nowOrderObj];
+      var args = {
+        type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
+        // type: "pdf",
+        report: grwebapp.urlAddRandomNo(this.grfPath),
+        //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
+        data: printObj,
+        PrinterName: this.printerName, //指定要输出的打印机名称
+        showOptionDlg: false,
+      };
+      grwebapp.webapp_ws_ajax_run(args);
       console.log(this.nowOrderObj)
       // 更新这个订单的一些状态，然后反馈日志信息到中间表
       await this.dealAfterPrint(this.nowOrderObj)
@@ -154,7 +170,7 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
       setTimeout(() => {
         this.updateImgSrc();
-      }, 500);
+      }, 1000);
     },
     runPrint() {
       if(this.machineName === '') {
@@ -221,6 +237,36 @@ export default {
         this.showLabelImg(this.nowOrderObj);
       }).catch((err)=> {
         this.$message.error('查询订单信息出错！稍后自动重试！');
+      });
+    },
+    openReport(filePath) {
+      this.openBoxLoading = true
+      let command;
+      switch (os.platform()) {
+        case 'win32': // Windows
+          command = `start "" "${filePath}"`;
+          break;
+        case 'darwin': // macOS
+          command = `open "${filePath}"`;
+          break;
+        case 'linux': // Linux
+          command = `xdg-open "${filePath}"`;
+          break;
+        default:
+          this.$message.error('不支持的操作系统！');
+          return;
+      }
+
+      // 执行打开文件的命令
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          this.$message.error(`无法打开文件：${filePath}`);
+          console.error(error);
+          this.openBoxLoading = false
+          return;
+        }
+        this.openBoxLoading = false
+        this.$message.success('文件已成功打开！');
       });
     }
   },
@@ -304,5 +350,8 @@ export default {
     border-radius: 15px; /* 边框圆角 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* 阴影效果 */
   }
+}
+::v-deep .el-dialog__body {
+  padding: 8px 20px;
 }
 </style>
