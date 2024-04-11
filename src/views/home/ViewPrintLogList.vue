@@ -39,6 +39,11 @@
           width="160">
         </el-table-column>
         <el-table-column
+          prop="reprintingTimes"
+          label="补打印次数"
+          width="160">
+        </el-table-column>
+        <el-table-column
           prop="index"
           label="箱序号"
           width="160">
@@ -106,11 +111,6 @@
         <el-table-column
           prop="customer"
           label="客户名称"
-          width="160">
-        </el-table-column>
-        <el-table-column
-          prop="reprintingTimes"
-          label="补打印次数"
           width="160">
         </el-table-column>
         <el-table-column
@@ -188,7 +188,7 @@ export default {
       });
     },
     rePrint(obj) {
-      console.log(obj)
+      this.$emit('rePrint', obj);
     },
     async getOrderListSearchParam() {
       const param = {

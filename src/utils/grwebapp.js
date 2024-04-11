@@ -3,8 +3,14 @@
 //变量 _grwebapp_version 指定自动更新时，客户端程序需要的版本号，如果小于此版本号，则自动进行更新
 var _grwebapp_websocket = null,
     _grwebapp_url = "http://www.rubylong.cn/download/gridreport6-webapp.exe",
-    _grwebapp_version = "6.8.1.0",
-    webapp_onmessage; //如果需要响应执行任务后的消息响应，应该写一个名称为 webapp_onmessage 的 function
+    _grwebapp_version = "6.8.1.0"; //如果需要响应执行任务后的消息响应，应该写一个名称为 webapp_onmessage 的 function
+
+function webapp_onmessage(event) {
+    // 处理接收到的消息
+    import('../views/home/eventBus.js').then(({ EventBus }) => {
+        EventBus.$emit('message-received', JSON.parse(event.data));
+    });
+}
 
 function webapp_url_method_valid(url, method) {
     if (!method) {

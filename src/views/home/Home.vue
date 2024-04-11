@@ -65,7 +65,7 @@
       append-to-body
       destroy-on-close
       >
-      <ViewPrintLogList :machineName="machineName" v-if="dialogVisible"/>
+      <ViewPrintLogList :machineName="machineName" v-if="dialogVisible" @rePrint="rePrint" ref="viewPrintLogListRef"/>
     </el-dialog>
   </div>
 </template>
@@ -77,6 +77,7 @@ import HttpUtil from '@/utils/HttpUtil'
 import ViewPrintLogList from './ViewPrintLogList.vue'
 const { exec } = require('child_process');
 const os = require('os');
+import { EventBus } from './eventBus';
 export default {
   name: "Home",
   components: {
@@ -102,6 +103,37 @@ export default {
   watch: {},
   computed: {},
   methods: {
+    rePrint(obj) {
+      // 1、打印标签
+      const printObj = {"Master":[obj]};
+      var args = {
+        type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
+        // type: "pdf",
+        report: grwebapp.urlAddRandomNo(this.grfPath),
+        //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
+        data: printObj,
+        PrinterName: this.printerName, //指定要输出的打印机名称
+        showOptionDlg: false,
+      };
+      grwebapp.webapp_ws_ajax_run(args);
+      this.$message.success('打印成功！')
+      // 2、回更补打印次数
+      const param = {
+        id: obj.id,
+        reprintingTimes: obj.reprintingTimes + 1
+      }
+      HttpUtil.post('/order/update', param).then((res)=> {
+        if(res.data && res.data > 0) {
+          // 3、打印成功重新查询订单参数
+          this.$refs.viewPrintLogListRef.getOrderListSearchParam();
+        } else {
+          this.$message.error('未成功更新补打印次数！请重试！')
+        }
+      }).catch((err)=> {
+        this.$message.error('未成功更新补打印次数！请重试！')
+      });
+      
+    },
     showPrintHistory() {
       this.dialogVisible = true
     },
@@ -113,10 +145,37 @@ export default {
       this.getMachineList();
     },
     updateImgSrc() {
-      console.log('展示图片')
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
     },
-    testPrint() {},
+    testPrint() {
+      const printObj = {"Master":[]};
+      const obj = [{
+        customer: '乐泰药业（兰西）有限公司',
+        customerName: '12gX3袋亮甲牌肤泰杀菌粉小盒 2312版',
+        orderNumber: 'CGJH1-102-X-SC231205-10',
+        customerNumber: '202404080001A',
+        customerMaterialNumber: 'LXSIF1203-2023121101',
+        ccodeScproduct: 'BX2024010089',
+        ccodeScaproduc: '0101001550',
+        namount: '1000',
+        machine: '06/乙',
+        qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
+        index: '00001',
+        weight: '13.66',
+        inspection: '合格/QC05'
+      }]
+      printObj.Master = obj;
+      var args = {
+        type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
+        // type: "pdf",
+        report: grwebapp.urlAddRandomNo(this.grfPath),
+        //实际应用中，data应该为程序中通过各种途径获取到的数据，最后要将数据转换为报表需要的XML或JSON格式的字符串数据
+        data: printObj,
+        PrinterName: this.printerName, //指定要输出的打印机名称
+        showOptionDlg: false,
+      };
+      grwebapp.webapp_ws_ajax_run(args);
+    },
     async printLable(weight) {
       const printObj = {"Master":[]};
       this.nowOrderObj.weight = weight
@@ -131,7 +190,7 @@ export default {
         showOptionDlg: false,
       };
       grwebapp.webapp_ws_ajax_run(args);
-      console.log(this.nowOrderObj)
+      this.printNum++;
       // 更新这个订单的一些状态，然后反馈日志信息到中间表
       await this.dealAfterPrint(this.nowOrderObj)
       // 马上查询下一个订单
@@ -168,9 +227,6 @@ export default {
         open: false  //指定导出后不自动打开文件
       };
       grwebapp.webapp_ws_ajax_run(args);
-      setTimeout(() => {
-        this.updateImgSrc();
-      }, 1000);
     },
     runPrint() {
       if(this.machineName === '') {
@@ -272,6 +328,13 @@ export default {
   },
   async created() {
     grwebapp.webapp_urlprotocol_startup();
+    // 监听事件
+    EventBus.$on('message-received', (data) => {
+      // console.log('eventBus收到消息', data)
+      if(data.event === 'ExportEnd' && data.type === 'img') {
+        this.updateImgSrc();
+      }
+    });
     // 查询机台信息
     this.getMachineList();
     // 加载机台和打印机配置
@@ -297,6 +360,10 @@ export default {
         this.$message.error('收到体重,未开始打印,不允许打印！')
       }
     })
+  },
+  beforeDestroy() {
+    // 停止监听事件以避免内存泄露
+    EventBus.$off('message-received');
   }
 };
 </script>
