@@ -6,10 +6,18 @@
         <div class="button-content" style="display: flex;align-items: center;">
           <span>当前机台为：</span>
           <el-select v-model="machineName" @change="selectMachine" placeholder="请选择" style="width: 150px;">
-            <el-option label="机台1" value="机台1" />
-            <el-option label="机台2" value="机台2" />
+            <el-option
+              v-for="(item, index) in machineList"
+              :key="index"
+              :label="item.machine"
+              :value="item.machine">
+            </el-option>
           </el-select>
-          <span style="margin-left: 20px;">运行状态：<span style="color: #67c23a;margin-left: 3px;"><i class="el-icon-loading"></i>运行中</span></span>
+          <span style="margin-left: 20px;" v-if="false">
+            运行状态：
+            <span style="color: #67c23a;margin-left: 3px;" v-if="istatusMjob === 1"><i class="el-icon-loading"></i>运行中</span>
+            <span style="color: red;margin-left: 3px;" v-else>未运行</span>
+          </span>
           <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">查看打印历史</el-button>
@@ -31,7 +39,7 @@
           <el-button type="primary" size="medium" @click="testPrint" style="margin-left: 15px;">测试打印</el-button>
         </div>
         <el-divider content-position="left">标签预览</el-divider>
-        <div style="width: 100%; height: calc(100% - 158px);display: flex; align-items: center; justify-content: center;">
+        <div style="width: 100%; height: calc(100% - 158px);display: flex; align-items: center; justify-content: center;" v-loading="labelLoading">
           <el-empty v-if="imageSrc === ''" description="暂无打印标签"></el-empty>
           <img v-else :src="imageSrc" class="img-style" style="width: 920px;height: 500px;"/>
         </div>
@@ -41,8 +49,8 @@
         <el-descriptions style="margin-top:20px;" :column="1" size="medium" border>
           <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct === undefined ? '未查询到可打印信息': nowOrderObj.idScproduct }}</el-descriptions-item>
           <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScproduct }}</el-descriptions-item>
-          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduc === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScaproduc }}</el-descriptions-item>
-          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduc === undefined ? '未查询到可打印信息': nowOrderObj.cnameScaproduc }}</el-descriptions-item>
+          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScaproduct }}</el-descriptions-item>
+          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.cnameScaproduct }}</el-descriptions-item>
           <el-descriptions-item label="客户名称">{{ nowOrderObj.customer === undefined ? '未查询到可打印信息': nowOrderObj.customer }}</el-descriptions-item>
           <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName === undefined ? '未查询到可打印信息': nowOrderObj.customerName }}</el-descriptions-item>
           <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber === undefined ? '未查询到可打印信息': nowOrderObj.orderNumber }}</el-descriptions-item>
@@ -52,7 +60,7 @@
           <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width === undefined ? '未查询到可打印信息': nowOrderObj.width }}</el-descriptions-item>
           <el-descriptions-item label="外箱高度">{{ nowOrderObj.height === undefined ? '未查询到可打印信息': nowOrderObj.height }}</el-descriptions-item>
           <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount === undefined ? '未查询到可打印信息': nowOrderObj.namount }}</el-descriptions-item>
-          <el-descriptions-item label="箱序号">{{ nowOrderObj.index === undefined ? '未查询到可打印信息': nowOrderObj.index }}</el-descriptions-item>
+          <el-descriptions-item label="箱序号">{{ nowOrderObj.iindex === undefined ? '未查询到可打印信息': nowOrderObj.iindex }}</el-descriptions-item>
           <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange === undefined ? '未查询到可打印信息': nowOrderObj.dstatuschange }}</el-descriptions-item>
         </el-descriptions>
       </div>
@@ -97,7 +105,8 @@ export default {
       configData: {},
       nowOrderObj: {}, // 当前展示的订单信息
       dialogVisible: false,
-      openBoxLoading: false
+      openBoxLoading: false,
+      labelLoading: false
     };
   },
   watch: {},
@@ -120,7 +129,7 @@ export default {
       // 2、回更补打印次数
       const param = {
         id: obj.id,
-        reprintingTimes: obj.reprintingTimes + 1
+        reprintingTime: obj.reprintingTime + 1
       }
       HttpUtil.post('/order/update', param).then((res)=> {
         if(res.data && res.data > 0) {
@@ -140,9 +149,15 @@ export default {
     handleClose() {
       this.dialogVisible = false
     },
-    refresh(){
+    async refresh(){
       // 重新查询订单信息
-      this.getMachineList();
+      this.labelLoading = true
+      await this.getMachineList();
+      // 查询当前打印订单信息
+      await this.getPrintInfo();
+      setTimeout(() => {
+        this.labelLoading = false
+      }, 500);
     },
     updateImgSrc() {
       this.imageSrc = 'D://label_temp_data/report/temp/temp.png?' + new Date().getTime();
@@ -156,11 +171,11 @@ export default {
         customerNumber: '202404080001A',
         customerMaterialNumber: 'LXSIF1203-2023121101',
         ccodeScproduct: 'BX2024010089',
-        ccodeScaproduc: '0101001550',
+        ccodeScaproduct: '0101001550',
         namount: '1000',
         machine: '06/乙',
         qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
-        index: '00001',
+        iIndex: '00001',
         weight: '13.66',
         inspection: '合格/QC05'
       }]
@@ -250,7 +265,7 @@ export default {
       obj.printerName = value;
       this.updateData(obj)
     },
-    getMachineList() {
+    async getMachineList() {
       this.machineList = []
       HttpUtil.post('/order/getMachineList', {}).then((res)=> {
         if(res.data&&res.data.length > 0) {
@@ -277,7 +292,7 @@ export default {
         console.error('Error:', error)
       }
     },
-    getPrintInfo() {
+    async getPrintInfo() {
       // 查询按照箱编号正序排序的第一个订单信息
       const param = {"machine": this.machineName}
       // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
@@ -332,6 +347,7 @@ export default {
     EventBus.$on('message-received', (data) => {
       // console.log('eventBus收到消息', data)
       if(data.event === 'ExportEnd' && data.type === 'img') {
+        console.log('刷新我走这了吗')
         this.updateImgSrc();
       }
     });

@@ -2,11 +2,11 @@
   <div style="width: 100%; height: 550px;">
     <div class="search">
       <span>生产订单ID</span>
-      <el-input placeholder="请输入生产订单ID" v-model="idScproduct" style="width: 200px;margin-left: 10px;" size="small"></el-input>
+      <el-input placeholder="请输入生产订单ID" v-model="idScproduct" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <span style="margin-left: 10px;">生产订单号</span>
-      <el-input placeholder="请输入生产订单号" v-model="ccodeScproduct" style="width: 200px;margin-left: 10px;" size="small"></el-input>
-      <!-- <span style="margin-left: 10px;">箱序号</span>
-      <el-input placeholder="请输入箱序号" v-model="boxIndex" style="width: 200px;margin-left: 10px;" size="small"></el-input> -->
+      <el-input placeholder="请输入生产订单号" v-model="ccodeScproduct" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
+      <span style="margin-left: 10px;">箱序号</span>
+      <el-input placeholder="请输入箱序号" v-model="boxIndex" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <el-button style="margin-left: 10px;" size="small" type="primary" @click="getOrderListSearch">查询</el-button>
     </div>
     <div class="tableDiv">
@@ -39,22 +39,22 @@
           width="160">
         </el-table-column>
         <el-table-column
-          prop="reprintingTimes"
+          prop="reprintingTime"
           label="补打印次数"
           width="160">
         </el-table-column>
         <el-table-column
-          prop="index"
+          prop="iindex"
           label="箱序号"
           width="160">
         </el-table-column>
         <el-table-column
-          prop="ccodeScaproduc"
+          prop="ccodeScaproduct"
           label="产品编号"
           width="160">
         </el-table-column>
         <el-table-column
-          prop="cnameScaproduc"
+          prop="cnameScaproduct"
           label="产品名称"
           width="160">
         </el-table-column>
@@ -160,7 +160,8 @@ export default {
       pageNum: 1,
       pageTotal: 0,
       idScproduct: '',
-      ccodeScproduct: ''
+      ccodeScproduct: '',
+      boxIndex: ''
     };
   },
   watch: {},
@@ -173,6 +174,7 @@ export default {
       const param = {
         idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
+        iindex: this.boxIndex,
         pageNum: this.pageNum,
         pageSize: this.pageSize,
         machine: this.machineName
@@ -194,6 +196,7 @@ export default {
       const param = {
         idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
+        iindex: this.boxIndex,
         pageNum: this.pageNum,
         pageSize: this.pageSize,
         machine: this.machineName

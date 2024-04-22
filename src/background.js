@@ -150,7 +150,7 @@ app.on('ready', () => {
   setAppTray();
   if (process.env.NODE_ENV === 'production') {
     // 启动Java进程
-    spawn(path.join(__static, './jre', 'jre1.8.0_251', 'bin', 'java'), ['-Xmx4096m', '-Xms4096m', '-jar', path.join(__static, './jarlib', 'label-print-jiuxingsoftware-middle.jar')]);
+    spawn(path.join(__static, './jre', 'jre1.8.0_251', 'bin', 'java'), ['-Xmx4096m', '-Xms4096m', '-jar', path.join(__static, './jarlib', 'label-print-jiuxing-middle.jar')]);
   }
 
   // 开发者工具
@@ -170,7 +170,6 @@ app.on('ready', () => {
   const server = net.createServer((socket) => {
     console.log('Client connected');
     socket.on('data', (data) => {
-      console.log(`Data received from client: ${data}`);
       mainWindow.webContents.send('getWeightJson', JSON.parse(data));
       // socket.write('Hello, client.'); // 向客户端发送响应
     });
