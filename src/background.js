@@ -81,10 +81,6 @@ app.on('ready', () => {
   ipcMain.on('min-window', (event, arg) => {
     mainWindow.minimize();
   })
-  // writeValuesToPLC
-  ipcMain.on('writeValuesToPLC', (event, arg1, arg2) => {
-    writeValuesToPLC(arg1, arg2);
-  })
   // 定义自定义事件
   ipcMain.on('max-window', (event, arg) => {
     if (arg === 'max-window') {
@@ -92,16 +88,6 @@ app.on('ready', () => {
     }
     mainWindow.unmaximize()
     mainWindow.center();
-  })
-  // 启动plc conPLC
-  ipcMain.on('conPLC', (event, arg1, arg2) => {
-    if (process.env.NODE_ENV === 'production') {
-      conPLC();
-    }
-    // setInterval(() => {
-    //   console.log(writeStrArr.toString());
-    // }, 50);
-    // sendHeartToPLC()
   })
   mainWindow.on('maximize', () => {
     mainWindow.webContents.send('mainWin-max', 'max-window')
@@ -134,19 +120,6 @@ app.on('ready', () => {
     const printers = mainWindow.webContents.getPrinters();
     event.reply('get-printers', printers);
   });
-  if (process.env.NODE_ENV === 'development') {
-    let revert = false;
-    setInterval(() => {
-      if(mainWindow) {
-        if(revert) {
-          mainWindow.webContents.send('receivedMsg', {DBW60:0,DBW62:0, DBW68:35580,DBW70:512,DBW72: -1793,DBB100:'HF800SR-1-H                   ',DBB130:'83048880004868800784          ',DBW76:19,DBW80:6000,DBW82:6000,DBW84:6000}, writeStrArr.toString())
-        } else {
-          mainWindow.webContents.send('receivedMsg', {DBW60:1,DBW62:0, DBW68:35580,DBW70:512,DBW72: -1793,DBB100:'HF800SR-1-H                   ',DBB130:'83048880004868800784          ',DBW76:19,DBW80:6000,DBW82:6000,DBW84:6000}, writeStrArr.toString())
-        }
-        revert = !revert;
-      }
-    }, 100);
-  }
   setAppTray();
   if (process.env.NODE_ENV === 'production') {
     // 启动Java进程
@@ -185,7 +158,7 @@ app.on('ready', () => {
   });
   ipcMain.handle('read-config-file', async (event, arg) => {
     if(!fs.existsSync("D://label_temp_data/config/config.json")){
-      fs.writeFile("D://label_temp_data/config/config.json", JSON.stringify({}), function(err) {});
+      fs.writeFile("D://label_temp_data/config/config.json", JSON.stringify({machineName:""}), function(err) {});
       return {};
     };
     return await fs.readFileSync("D://label_temp_data/config/config.json", 'utf8');
@@ -195,82 +168,6 @@ app.on('ready', () => {
     await fs.writeFileSync("D://label_temp_data/config/config.json", JSON.stringify(arg))
   })
 });
-
-function conPLC() {
-  logger.info('开始连接PLC')
-  // 查询配置
-  HttpUtil.get('/labelConfig/getConfig').then((res)=> {
-    logger.info(JSON.stringify(res))
-    if(!res.data.plcPort) {
-      logger.info('配置查询失败')
-      // We have an error. Maybe the PLC is not reachable.
-      conPLC();
-      return false;
-    }
-    conn.initiateConnection( { port: Number(res.data.plcPort), host: res.data.plcIp, rack: 0, slot: 1, debug: false }, (err) => {
-      if (typeof(err) !== "undefined") {
-        logger.info('连接PLC失败' + JSON.stringify(err))
-        // We have an error. Maybe the PLC is not reachable.
-        conPLC();
-        return false;
-        // process.exit();
-      }
-      conn.setTranslationCB(function(tag) { return variables[tag]; }); // This sets the "translation" to allow us to work with object names
-      logger.info('连接PLC成功')
-      // PLC看门狗心跳
-      conn.addItems('DBW60')
-      // 输送线自动运行 DBW62
-      conn.addItems('DBW62')
-      // 故障信息
-      conn.addItems('DBW66')
-      // 输送线不允许加速器写
-      conn.addItems('DBW64')
-      // 束下实时反馈速度
-      conn.addItems('DBW68')
-      // 关键点光电信号
-      conn.addItems('DBW70');
-      // 电机运行信号
-      conn.addItems('DBW72');
-      // 束下前输送速度比
-      conn.addItems('DBW76');
-      // 上料固定扫码
-      conn.addItems('DBB100');
-      // 迷宫出口固定扫码
-      conn.addItems('DBB130');
-      // J区速度
-      conn.addItems('DBW80');
-      // K区速度
-      conn.addItems('DBW82');
-      // L区速度
-      conn.addItems('DBW84');
-      
-      // 读DBW6和DBW62
-      setInterval(() => {
-        conn.readAllItems(valuesReady);
-      }, 50);
-      setInterval(() => {
-        // nodes7 代码
-        conn.writeItems(writeAddArr, writeStrArr, valuesWritten);
-      }, 100);
-      // 发送心跳
-      sendHeartToPLC()
-    });
-  }).catch((err)=> {
-    logger.info('config error!')
-  });
-}
-let times = 1;
-let nowValue = 0;
-function sendHeartToPLC() {
-  setInterval(() => {
-    if(times > 5) {
-        times = 1;
-        nowValue = 1 - nowValue;
-    }
-    times++;
-    writeValuesToPLC('DBW0', nowValue);
-  }, 200); // 每200毫秒执行一次交替
-}
 
 function createFile(fileNameVal) {
   const sourcePath = path.join(__static, './report', fileNameVal);// 要复制的文件的路径=
@@ -337,124 +234,6 @@ function createFile(fileNameVal) {
       console.error('文件复制过程中出现错误：', err);
     }
   }
-}
-
-var variables = {
-  DBW0: 'DB101,INT0', // 心跳
-  DBW2: 'DB101,INT2', // 加速器设定输送线速度
-  DBW4: 'DB101,INT4', // 加速器允许货物进入辐照区
-  DBW6: 'DB101,INT6', // 暂停按钮
-  DBW8: 'DB101,INT8', // 启动输送线
-  DBW10: 'DB101,INT10', // 停止输送线
-  DBW12: 'DB101,INT12', // 翻转模式
-  DBW14: 'DB101,INT14', // 回流模式
-  DBW16: 'DB101,INT16', // 下货
-  DBW18: 'DB101,INT18', // 剔除指令
-  DBW20: 'DB101,INT20', // 单独启动105
-  DBW22: 'DB101,INT22', // 纸箱宽度
-  DBW24: 'DB101,INT24', // 纸箱长度
-  DBW26: 'DB101,INT26', // 不允许上货
-  DBW34: 'DB101,INT34', // 扫码信息不一致报警
-  DBW36: 'DB101,INT36', // 允许上货
-  DBW38: 'DB101,INT38', // 下货报警
-  DBW40: 'DB101,INT40', // 调节自动居中
-  DBW42: 'DB101,INT42', // 故障复位
-  DBW44: 'DB101,INT44', // 下货完成
-  DBW46: 'DB101,INT46', // 托盘模式
-  DBW60: 'DB101,INT60', // 看门狗心跳
-  DBW62: 'DB101,INT62', // 输送系统自动运行
-  DBW64: 'DB101,INT64',
-  DBW66: 'DB101,INT66', // 故障信息
-  DBW68: 'DB101,INT68',
-  DBW70: 'DB101,INT70',
-  DBW72: 'DB101,INT72',
-  DBW76: 'DB101,INT76', // 束下前输送速度比
-  DBW80: 'DB101,INT80', // J区速度
-  DBW82: 'DB101,INT82', // K区速度
-  DBW84: 'DB101,INT84', // L区速度
-  DBB100: 'DB101,C100.30',
-  DBB130: 'DB101,C130.30'
-};
-
-var writeStrArr = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var writeAddArr = ['DBW0', 'DBW2', 'DBW4', 'DBW6', 'DBW8', 'DBW10', 'DBW12', 'DBW14', 'DBW16', 'DBW18', 'DBW22', 'DBW24', 'DBW26', 'DBW34', 'DBW36', 'DBW38', 'DBW40', 'DBW42', 'DBW44', 'DBW46'];
-
-// 给PLC写值
-function writeValuesToPLC(add, values) {
-  switch (add) {
-    case 'DBW0':
-      writeStrArr[0] = values;
-      break;
-    case 'DBW2':
-      writeStrArr[1] = values;
-      break;
-    case 'DBW4':
-      writeStrArr[2] = values;
-      break;
-    case 'DBW6':
-      writeStrArr[3] = values;
-      break;
-    case 'DBW8':
-      writeStrArr[4] = values;
-      break;
-    case 'DBW10':
-      writeStrArr[5] = values;
-      break;
-    case 'DBW12':
-      writeStrArr[6] = values;
-      break;
-    case 'DBW14':
-      writeStrArr[7] = values;
-      break;
-    case 'DBW16':
-      writeStrArr[8] = values;
-      break;
-    case 'DBW18':
-      writeStrArr[9] = values;
-      break;
-    case 'DBW22':
-      writeStrArr[10] = values;
-      break;
-    case 'DBW24':
-      writeStrArr[11] = values;
-      break;
-    case 'DBW26':
-      writeStrArr[12] = values;
-      break;
-    case 'DBW34':
-      writeStrArr[13] = values;
-      break;
-    case 'DBW36':
-      writeStrArr[14] = values;
-      break;
-    case 'DBW38':
-      writeStrArr[15] = values;
-      break;
-    case 'DBW40':
-      writeStrArr[16] = values;
-      break;
-    case 'DBW42':
-      writeStrArr[17] = values;
-      break;
-    case 'DBW44':
-      writeStrArr[18] = values;
-      break;
-    case 'DBW46':
-      writeStrArr[19] = values;
-      break;
-    default:
-      break;
-  }
-}
-
-function valuesWritten(anythingBad) {
-  if (anythingBad) { console.log("SOMETHING WENT WRONG WRITING VALUES!!!!"); }
-}
-
-function valuesReady(anythingBad, values) {
-  if (anythingBad) { console.log("SOMETHING WENT WRONG READING VALUES!!!!"); }
-  // console.log(values)
-  mainWindow.webContents.send('receivedMsg', values, writeStrArr.toString())
 }
 
 const setAppTray = () => {  

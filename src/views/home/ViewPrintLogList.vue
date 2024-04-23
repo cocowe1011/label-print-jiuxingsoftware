@@ -49,6 +49,11 @@
           width="160">
         </el-table-column>
         <el-table-column
+          prop="nweight"
+          label="重量"
+          width="160">
+        </el-table-column>
+        <el-table-column
           prop="ccodeScaproduct"
           label="产品编号"
           width="160">

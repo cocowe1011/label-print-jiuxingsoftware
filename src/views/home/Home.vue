@@ -4,30 +4,44 @@
       <div class="home-left">
         <el-divider content-position="left">机台信息</el-divider>
         <div class="button-content" style="display: flex;align-items: center;">
-          <span>当前机台为：</span>
-          <el-select v-model="machineName" @change="selectMachine" placeholder="请选择" style="width: 150px;">
-            <el-option
-              v-for="(item, index) in machineList"
-              :key="index"
-              :label="item.machine"
-              :value="item.machine">
-            </el-option>
-          </el-select>
-          <span style="margin-left: 20px;" v-if="false">
-            运行状态：
-            <span style="color: #67c23a;margin-left: 3px;" v-if="istatusMjob === 1"><i class="el-icon-loading"></i>运行中</span>
-            <span style="color: red;margin-left: 3px;" v-else>未运行</span>
-          </span>
+          <span>配置机台名：<span>{{ machineName === '' ? '请配置本地文件': machineName }}</span></span>
+          <span style="margin-left: 15px;">作业状态：<span :style="{color: machineTask === null ? 'red': 'green'}"><i class="el-icon-loading" v-if="machineTask !== null"></i>{{ machineTask === null ? '未作业': '作业中' }}</span></span>
           <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">查看打印历史</el-button>
+          <el-button style="margin-left: 20px;" type="warning" plain size="medium" @click="openStandPop">单机打印{{ isPrintStand ? '（打印中）': '' }}</el-button>
+          <div class="jindu_tiao_div" v-show="standPrintPopShow">
+            <div class="jindu_title">设置单机打印</div>
+            <div class="jindu_context">
+              <div class="jindu_context_div">
+                <span>设置体重：</span>
+                <el-input v-model="standWeightValue" placeholder="请输入" style="width: 220px;margin-left: 5px;" type="number" size="small"></el-input>
+              </div>
+              <div class="jindu_context_div">
+                <span>打印份数：</span>
+                <el-input v-model="standPrintNum" placeholder="请输入" style="width: 220px;margin-left: 5px;" type="number" size="small"></el-input>
+              </div>
+            </div>
+            <div class="jindu_jindu_div" v-show="isShowPrintJinDu">
+              正在打印，共<span>&nbsp;{{ standPrintNum }}</span>&nbsp;份，当前已打印：<span>&nbsp;{{ nowPrintStandNum > standPrintNum ? standPrintNum : nowPrintStandNum }}&nbsp;</span>
+            </div>
+            <div class="jindu_button">
+              <el-button type="primary" size="small" @click="goingPrintStand" :loading="isPrintStand">开始打印</el-button>
+              <el-button type="danger" size="small" @click="stopPrintStand">停止打印</el-button>
+              <el-button type="text" size="small" @click="reStandPop">重置数据</el-button>
+              <el-button type="text" size="small" @click="closeStandPop">关闭</el-button>
+            </div>
+          </div>
         </div>
         <el-divider content-position="left">标签打印</el-divider>
         <div class="button-content" style="display: flex;align-items: center;">
           <el-button type="primary" icon="el-icon-switch-button" size="medium" :loading="runStatus" @click="runPrint">启动打印</el-button>
           <el-button type="danger" icon="el-icon-close" size="medium" @click="stopPrint">停止</el-button>
           <el-button size="medium" @click="openReport(grfPath)" :loading="openBoxLoading">标签设计</el-button>
-          <span style="margin-left: 50px;">选择打印机：</span>
+          <el-tooltip class="item" effect="dark" content="设置标签数据" placement="top-start">
+            <el-button size="medium" type="primary" icon="el-icon-edit" circle @click="showLableDataView"></el-button>
+          </el-tooltip>
+          <span style="margin-left: 25px;">选择打印机：</span>
           <el-select v-model="printerName" @change="changePrinterName" placeholder="请选择" style="width: 300px;">
             <el-option
               v-for="(item, index) in printers"
@@ -46,23 +60,25 @@
       </div>
       <div class="home-right">
         <el-divider content-position="left">当前订单信息</el-divider>
-        <el-descriptions style="margin-top:20px;" :column="1" size="medium" border>
-          <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct === undefined ? '未查询到可打印信息': nowOrderObj.idScproduct }}</el-descriptions-item>
-          <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScproduct }}</el-descriptions-item>
-          <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScaproduct }}</el-descriptions-item>
-          <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.cnameScaproduct }}</el-descriptions-item>
-          <el-descriptions-item label="客户名称">{{ nowOrderObj.customer === undefined ? '未查询到可打印信息': nowOrderObj.customer }}</el-descriptions-item>
-          <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName === undefined ? '未查询到可打印信息': nowOrderObj.customerName }}</el-descriptions-item>
-          <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber === undefined ? '未查询到可打印信息': nowOrderObj.orderNumber }}</el-descriptions-item>
-          <el-descriptions-item label="客户批号">{{ nowOrderObj.customerNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerNumber }}</el-descriptions-item>
-          <el-descriptions-item label="客户料号">{{ nowOrderObj.customerMaterialNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerMaterialNumber }}</el-descriptions-item>
-          <el-descriptions-item label="外箱长度">{{ nowOrderObj.length === undefined ? '未查询到可打印信息': nowOrderObj.length }}</el-descriptions-item>
-          <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width === undefined ? '未查询到可打印信息': nowOrderObj.width }}</el-descriptions-item>
-          <el-descriptions-item label="外箱高度">{{ nowOrderObj.height === undefined ? '未查询到可打印信息': nowOrderObj.height }}</el-descriptions-item>
-          <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount === undefined ? '未查询到可打印信息': nowOrderObj.namount }}</el-descriptions-item>
-          <el-descriptions-item label="箱序号">{{ nowOrderObj.iindex === undefined ? '未查询到可打印信息': nowOrderObj.iindex }}</el-descriptions-item>
-          <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange === undefined ? '未查询到可打印信息': nowOrderObj.dstatuschange }}</el-descriptions-item>
-        </el-descriptions>
+        <div style="height: calc(100% - 8px);width:100%;overflow: auto;">
+          <el-descriptions style="margin-top:10px;" :column="1" size="medium" border>
+            <el-descriptions-item label="生产订单ID">{{ nowOrderObj.idScproduct === undefined ? '未查询到可打印信息': nowOrderObj.idScproduct }}</el-descriptions-item>
+            <el-descriptions-item label="生产批号">{{ nowOrderObj.ccodeScproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScproduct }}</el-descriptions-item>
+            <el-descriptions-item label="产品编号">{{ nowOrderObj.ccodeScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.ccodeScaproduct }}</el-descriptions-item>
+            <el-descriptions-item label="产品名称">{{ nowOrderObj.cnameScaproduct === undefined ? '未查询到可打印信息': nowOrderObj.cnameScaproduct }}</el-descriptions-item>
+            <el-descriptions-item label="客户名称">{{ nowOrderObj.customer === undefined ? '未查询到可打印信息': nowOrderObj.customer }}</el-descriptions-item>
+            <el-descriptions-item label="客户品名">{{ nowOrderObj.customerName === undefined ? '未查询到可打印信息': nowOrderObj.customerName }}</el-descriptions-item>
+            <el-descriptions-item label="委印单号">{{ nowOrderObj.orderNumber === undefined ? '未查询到可打印信息': nowOrderObj.orderNumber }}</el-descriptions-item>
+            <el-descriptions-item label="客户批号">{{ nowOrderObj.customerNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerNumber }}</el-descriptions-item>
+            <el-descriptions-item label="客户料号">{{ nowOrderObj.customerMaterialNumber === undefined ? '未查询到可打印信息': nowOrderObj.customerMaterialNumber }}</el-descriptions-item>
+            <el-descriptions-item label="外箱长度">{{ nowOrderObj.length === undefined ? '未查询到可打印信息': nowOrderObj.length }}</el-descriptions-item>
+            <el-descriptions-item label="外箱宽度">{{ nowOrderObj.width === undefined ? '未查询到可打印信息': nowOrderObj.width }}</el-descriptions-item>
+            <el-descriptions-item label="外箱高度">{{ nowOrderObj.height === undefined ? '未查询到可打印信息': nowOrderObj.height }}</el-descriptions-item>
+            <el-descriptions-item label="每箱包装数量">{{ nowOrderObj.namount === undefined ? '未查询到可打印信息': nowOrderObj.namount }}</el-descriptions-item>
+            <el-descriptions-item label="箱序号">{{ nowOrderObj.iindex === undefined ? '未查询到可打印信息': nowOrderObj.iindex }}</el-descriptions-item>
+            <el-descriptions-item label="生产日期">{{ nowOrderObj.dstatuschange === undefined ? '未查询到可打印信息': nowOrderObj.dstatuschange }}</el-descriptions-item>
+          </el-descriptions>
+        </div>
       </div>
     </div>
     <el-dialog
@@ -74,6 +90,23 @@
       destroy-on-close
       >
       <ViewPrintLogList :machineName="machineName" v-if="dialogVisible" @rePrint="rePrint" ref="viewPrintLogListRef"/>
+    </el-dialog>
+    <el-dialog
+      title="设置标签数据"
+      :visible.sync="setLabelDataView"
+      width="300px"
+      :before-close="handleCloseLableDataView"
+      append-to-body
+      destroy-on-close
+      >
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <span style="font-size: 14px;">检验：</span>
+        <el-input v-model="inspectionSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+      </div>
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
+        <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -100,18 +133,82 @@ export default {
       grfPath: 'D://label_temp_data/report/labelPrint.grf',
       imageSrc: '',
       machineName: '',
-      machineList: [],
+      machineTask: null,
       printNum: 0,
       configData: {},
       nowOrderObj: {}, // 当前展示的订单信息
       dialogVisible: false,
       openBoxLoading: false,
-      labelLoading: false
+      labelLoading: false,
+      setLabelDataView: false,
+      inspectionSetValue: '',
+      standPrintPopShow: false,
+      isPrintStand: false,
+      standWeightValue: 0,
+      standPrintNum: 0,
+      nowPrintStandNum: 0,
+      isShowPrintJinDu: false
     };
   },
   watch: {},
   computed: {},
   methods: {
+    standPrint() {
+      if(Object.keys(this.nowOrderObj).length === 0) {
+        this.$message.error('打印已停止！无可打印的订单！')
+        this.isPrintStand = false
+      } else {
+        if(this.nowPrintStandNum < this.standPrintNum) {
+          this.nowPrintStandNum++;
+          // 调用打印机
+          this.printLable(this.standWeightValue)
+        } else {
+          this.$message.success('打印已完成，自动停止打印！')
+          this.isPrintStand = false
+        }
+      }
+    },
+    goingPrintStand() {
+      // 判断当前有没有可以打印的订单
+      if(Object.keys(this.nowOrderObj).length === 0) {
+        this.$message.error('当前无可打印的订单！')
+        return false
+      }
+      // 先判断整体的打印按钮有没有开启
+      if (this.runStatus) {
+        // 判断体重和打印份数是否都大于0
+        if (this.standWeightValue > 0 && this.standPrintNum >0) {
+          // 开启循环打印，展示当前打印了
+          this.isPrintStand = true
+          this.isShowPrintJinDu = true
+          this.standPrint();
+        } else {
+          this.$message.error('体重和打印份数必须为大于0的数字!')
+        }
+      } else {
+        this.$message.error('请先启动打印！')
+      }
+      
+    },
+    stopPrintStand() {
+      this.isPrintStand = false
+    },
+    openStandPop() {
+      this.standPrintPopShow = true
+    },
+    reStandPop() {
+      if(this.isPrintStand) {
+        this.$message.error('请先停止打印！');
+      } else {
+        this.standWeightValue = 0;
+        this.standPrintNum = 0;
+        this.nowPrintStandNum = 0;
+        this.isShowPrintJinDu = false
+      }
+    },
+    closeStandPop() {
+      this.standPrintPopShow = false
+    },
     rePrint(obj) {
       // 1、打印标签
       const printObj = {"Master":[obj]};
@@ -149,10 +246,18 @@ export default {
     handleClose() {
       this.dialogVisible = false
     },
+    showLableDataView() {
+      // 查询本地配置
+      this.setLabelDataView = true;
+    },
+    handleCloseLableDataView() {
+      this.setLabelDataView = false;
+      this.refresh()
+    },
     async refresh(){
       // 重新查询订单信息
       this.labelLoading = true
-      await this.getMachineList();
+      await this.getMachineTask();
       // 查询当前打印订单信息
       await this.getPrintInfo();
       setTimeout(() => {
@@ -177,7 +282,8 @@ export default {
         qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
         iIndex: '00001',
         weight: '13.66',
-        inspection: '合格/QC05'
+        inspection: '合格/QC05',
+        cremark: '测试备注'
       }]
       printObj.Master = obj;
       var args = {
@@ -193,7 +299,8 @@ export default {
     },
     async printLable(weight) {
       const printObj = {"Master":[]};
-      this.nowOrderObj.weight = weight
+      this.nowOrderObj.nweight = weight
+      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + weight
       printObj.Master = [this.nowOrderObj];
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
@@ -244,7 +351,7 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
     },
     runPrint() {
-      if(this.machineName === '') {
+      if(this.machineTask === null) {
         this.$message.error('请选择机台！')
         return false;
       }
@@ -255,9 +362,9 @@ export default {
       this.runStatus = false
       this.$message.success('已停止！')
     },
-    async selectMachine(value) {
+    async saveLabelSetData() {
       const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-      obj.machineName = value;
+      obj.inspectionSetValue = this.inspectionSetValue;
       this.updateData(obj)
     },
     async changePrinterName(value) {
@@ -265,21 +372,24 @@ export default {
       obj.printerName = value;
       this.updateData(obj)
     },
-    async getMachineList() {
-      this.machineList = []
-      HttpUtil.post('/order/getMachineList', {}).then((res)=> {
-        if(res.data&&res.data.length > 0) {
-          this.machineList = res.data
-        }
-      }).catch((err)=> {
-        this.$message.error('查询机台任务出错！请刷新重试！');
-      });
+    async getMachineTask() {
+      this.machineTask = null
+      if(this.machineName != '') {
+        await HttpUtil.post('/order/getMachineTask', {"machine": this.machineName}).then((res)=> {
+          if(res.data&&res.data.length > 0) {
+            this.machineTask = res.data[0]
+          }
+        }).catch((err)=> {
+          this.$message.error('查询机台任务出错！请刷新重试！');
+        });
+      }
     },
     async loadData() {
       try {
         this.configData = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-        this.machineName = this.configData.machineName
+        this.machineName = (this.configData.machineName === undefined || this.configData.machineName === null) ? '' : this.configData.machineName
         this.printerName = this.configData.printerName
+        this.inspectionSetValue = this.configData.inspectionSetValue
       } catch (error) {
         console.error('Error:', error)
       }
@@ -293,22 +403,28 @@ export default {
       }
     },
     async getPrintInfo() {
-      // 查询按照箱编号正序排序的第一个订单信息
-      const param = {"machine": this.machineName}
-      // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
-      HttpUtil.post('/order/getOrderBoxInfo', param).then((res)=> {
-        if(res.data) {
-          this.nowOrderObj = res.data
-          this.nowOrderObj.machine = this.machineName
-        } else {
-          // 没有订单可打印了，展示空白即可
-          this.nowOrderObj = {}
-        }
-        // 展示图片
-        this.showLabelImg(this.nowOrderObj);
-      }).catch((err)=> {
-        this.$message.error('查询订单信息出错！稍后自动重试！');
-      });
+      if (this.machineTask != null) {
+        // 查询按照箱编号正序排序的第一个订单信息
+        const param = {"machine": this.machineTask.machine, "idScproduct": this.machineTask.idScproduct}
+        // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
+        HttpUtil.post('/order/getOrderBoxInfo', param).then((res)=> {
+          if(res.data) {
+            this.nowOrderObj = res.data
+            this.nowOrderObj.machine = this.machineTask.machine
+            this.nowOrderObj.inspection = this.inspectionSetValue
+            this.nowOrderObj.qrCode = this.machineTask.machine + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.width + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex
+          } else {
+            // 没有订单可打印了，展示空白即可
+            this.nowOrderObj = {}
+          }
+          // 展示图片
+          this.showLabelImg(this.nowOrderObj);
+        }).catch((err)=> {
+          this.$message.error('查询订单信息出错！稍后自动重试！');
+        });
+      } else {
+        this.nowOrderObj = {}
+      }
     },
     openReport(filePath) {
       this.openBoxLoading = true
@@ -347,14 +463,16 @@ export default {
     EventBus.$on('message-received', (data) => {
       // console.log('eventBus收到消息', data)
       if(data.event === 'ExportEnd' && data.type === 'img') {
-        console.log('刷新我走这了吗')
         this.updateImgSrc();
+        if (this.isPrintStand) {
+          this.standPrint()
+        }
       }
     });
-    // 查询机台信息
-    this.getMachineList();
     // 加载机台和打印机配置
     await this.loadData();
+    // 查询机台信息
+    await this.getMachineTask();
     // 查询当前打印订单信息
     this.getPrintInfo();
   },
@@ -406,6 +524,54 @@ export default {
       .button-content {
         height: 50px;
         width: 100%;
+        .jindu_tiao_div {
+          position: absolute;
+          background: #fff;
+          border-radius: 4px;
+          z-index: 2000;
+          color: #606266;
+          box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+          width: 400px;
+          height: 180px;
+          top: 83px;
+          left: 600px;
+          .jindu_title {
+            height: 35px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 15px;
+            font-weight: 700;
+          }
+          .jindu_context {
+            width: 100%;
+            height: 80px;
+            .jindu_context_div {
+              width: 100%;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              // box-sizing: border-box;
+              // padding-left: 15px;
+            }
+          }
+          .jindu_button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 45px;
+          }
+          .jindu_jindu_div {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
       }
     }
     .home-right {
@@ -436,5 +602,19 @@ export default {
 }
 ::v-deep .el-dialog__body {
   padding: 8px 20px;
+}
+// 滚动槽样式定义
+::-webkit-scrollbar {
+  width: 5px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: #c2c8cc !important;
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+  background-color: #c2c8cc;
 }
 </style>

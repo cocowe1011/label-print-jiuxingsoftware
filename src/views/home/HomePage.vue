@@ -44,7 +44,6 @@
         <div class="maskDiv-top-close" @click="closewindow"><i class="el-icon-close" style="font-size:18px;font-weight:600;"></i></div>
       </div>
       <div class="maskDiv-down">
-        <StatusMonitor></StatusMonitor>
         <keep-alive>
           <router-view/>
         </keep-alive>
@@ -69,14 +68,11 @@
 
 <script>
 import { ipcRenderer } from 'electron'
-import StatusMonitor from '@/components/StatusMonitoring.vue'
 import HttpUtil from '@/utils/HttpUtil'
 const remote = require('electron').remote
 export default {
   name: "HomePage",
-  components: {
-    StatusMonitor
-  },
+  components: {},
   props: {},
   data() {
     return {
