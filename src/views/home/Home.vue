@@ -100,8 +100,16 @@
       destroy-on-close
       >
       <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <span style="font-size: 14px;">检验：</span>
+        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">标签号：</div>
+        <el-input v-model="iboxtagSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+      </div>
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">检验：</div>
         <el-input v-model="inspectionSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+      </div>
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">班次：</div>
+        <el-input v-model="cclassSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
       </div>
       <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
         <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
@@ -147,7 +155,9 @@ export default {
       standWeightValue: 0,
       standPrintNum: 0,
       nowPrintStandNum: 0,
-      isShowPrintJinDu: false
+      isShowPrintJinDu: false,
+      iboxtagSetValue: 0,
+      cclassSetValue: ''
     };
   },
   watch: {},
@@ -210,6 +220,7 @@ export default {
       this.standPrintPopShow = false
     },
     rePrint(obj) {
+      console.log(obj)
       // 1、打印标签
       const printObj = {"Master":[obj]};
       var args = {
@@ -279,6 +290,7 @@ export default {
         ccodeScaproduct: '0101001550',
         namount: '1000',
         machine: '06/乙',
+        cclass: '06/测试',
         qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
         iIndex: '00001',
         weight: '13.66',
@@ -300,7 +312,7 @@ export default {
     async printLable(weight) {
       const printObj = {"Master":[]};
       this.nowOrderObj.nweight = weight
-      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + weight
+      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + weight + 'Kg' + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex + ',' + this.machineTask.machine
       printObj.Master = [this.nowOrderObj];
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
@@ -365,6 +377,8 @@ export default {
     async saveLabelSetData() {
       const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
       obj.inspectionSetValue = this.inspectionSetValue;
+      obj.iboxtagSetValue = this.iboxtagSetValue;
+      obj.cclassSetValue = this.cclassSetValue;
       this.updateData(obj)
     },
     async changePrinterName(value) {
@@ -390,6 +404,8 @@ export default {
         this.machineName = (this.configData.machineName === undefined || this.configData.machineName === null) ? '' : this.configData.machineName
         this.printerName = this.configData.printerName
         this.inspectionSetValue = this.configData.inspectionSetValue
+        this.iboxtagSetValue = this.configData.iboxtagSetValue
+        this.cclassSetValue = this.configData.cclassSetValue
       } catch (error) {
         console.error('Error:', error)
       }
@@ -412,13 +428,16 @@ export default {
             this.nowOrderObj = res.data
             this.nowOrderObj.machine = this.machineTask.machine
             this.nowOrderObj.inspection = this.inspectionSetValue
-            this.nowOrderObj.qrCode = this.machineTask.machine + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.width + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex
+            this.nowOrderObj.qrCode = (this.machineTask.machine === 'M-5#ZHJ' ? '02' : '01') + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.width
             this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
+            this.nowOrderObj.iboxtag = this.iboxtagSetValue
+            this.nowOrderObj.cclass = this.cclassSetValue
           } else {
             // 没有订单可打印了，展示空白即可
             this.nowOrderObj = {}
           }
           // 展示图片
+          console.log(this.nowOrderObj)
           this.showLabelImg(this.nowOrderObj);
         }).catch((err)=> {
           this.$message.error('查询订单信息出错！稍后自动重试！');
@@ -462,7 +481,7 @@ export default {
     grwebapp.webapp_urlprotocol_startup();
     // 监听事件
     EventBus.$on('message-received', (data) => {
-      // console.log('eventBus收到消息', data)
+      console.log('eventBus收到消息', data)
       if(data.event === 'ExportEnd' && data.type === 'img') {
         this.updateImgSrc();
         if (this.isPrintStand) {

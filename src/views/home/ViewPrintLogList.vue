@@ -54,6 +54,11 @@
           width="160">
         </el-table-column>
         <el-table-column
+          prop="iboxtag"
+          label="标签号"
+          width="160">
+        </el-table-column>
+        <el-table-column
           prop="ccodeScaproduct"
           label="产品编号"
           width="160">
@@ -106,6 +111,11 @@
         <el-table-column
           prop="machine"
           label="作业机台名称"
+          width="160">
+        </el-table-column>
+        <el-table-column
+          prop="cclass"
+          label="班次"
           width="160">
         </el-table-column>
         <el-table-column

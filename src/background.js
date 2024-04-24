@@ -142,15 +142,19 @@ app.on('ready', () => {
   // 创建 Socket 服务端
   const server = net.createServer((socket) => {
     console.log('Client connected');
+    mainWindow.webContents.send('dealSocketStatus', true)
     socket.on('data', (data) => {
       mainWindow.webContents.send('getWeightJson', JSON.parse(data));
+      mainWindow.webContents.send('dealSocketStatus', true)
       // socket.write('Hello, client.'); // 向客户端发送响应
     });
     socket.on('end', () => {
       console.log('Client disconnected');
+      mainWindow.webContents.send('dealSocketStatus', false)
     });
     socket.on('error', (error) => {
         console.error(`Error: ${error}`);
+        mainWindow.webContents.send('dealSocketStatus', false)
       });
     });
   server.listen(2000, () => {
