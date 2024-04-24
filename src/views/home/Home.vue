@@ -413,6 +413,7 @@ export default {
             this.nowOrderObj.machine = this.machineTask.machine
             this.nowOrderObj.inspection = this.inspectionSetValue
             this.nowOrderObj.qrCode = this.machineTask.machine + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.width + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex
+            this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
           } else {
             // 没有订单可打印了，展示空白即可
             this.nowOrderObj = {}
