@@ -205,6 +205,9 @@ export default {
       });
     },
     rePrint(obj) {
+      if(obj.nweight === 0) {
+        obj.nweight = ''
+      }
       this.$emit('rePrint', obj);
     },
     async getOrderListSearchParam() {

@@ -160,7 +160,7 @@ export default {
       inspectionSetValue: '',
       standPrintPopShow: false,
       isPrintStand: false,
-      standWeightValue: 0,
+      standWeightValue: '',
       standPrintNum: 0,
       nowPrintStandNum: 0,
       isShowPrintJinDu: false,
@@ -196,8 +196,8 @@ export default {
       }
       // 先判断整体的打印按钮有没有开启
       if (this.runStatus) {
-        // 判断体重和打印份数是否都大于0
-        if (this.standWeightValue > 0 && this.standPrintNum >0) {
+        // 判断打印份数是否大于0
+        if (this.standPrintNum >0) {
           // 开启循环打印，展示当前打印了
           this.isPrintStand = true
           this.isShowPrintJinDu = true
@@ -220,7 +220,7 @@ export default {
       if(this.isPrintStand) {
         this.$message.error('请先停止打印！');
       } else {
-        this.standWeightValue = 0;
+        this.standWeightValue = '';
         this.standPrintNum = 0;
         this.nowPrintStandNum = 0;
         this.isShowPrintJinDu = false
@@ -230,7 +230,6 @@ export default {
       this.standPrintPopShow = false
     },
     rePrint(obj) {
-      console.log(obj)
       // 1、打印标签
       const printObj = {"Master":[obj]};
       var args = {
@@ -336,6 +335,10 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
       this.printNum++;
       // 更新这个订单的一些状态，然后反馈日志信息到中间表
+      // 恢复体重,处理空串和0
+      if(this.nowOrderObj.nweight === '') {
+        this.nowOrderObj.nweight = 0
+      }
       await this.dealAfterPrint(this.nowOrderObj)
       // 马上查询下一个订单
       this.getPrintInfo();
