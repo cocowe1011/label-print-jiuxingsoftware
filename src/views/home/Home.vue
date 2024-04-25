@@ -7,12 +7,20 @@
           <span>配置机台名：<span>{{ machineName === '' ? '请配置本地文件': machineName }}</span></span>
           <span style="margin-left: 15px;">作业状态：<span :style="{color: machineTask === null ? 'red': 'green'}"><i class="el-icon-loading" v-if="machineTask !== null"></i>{{ machineTask === null ? '未作业': '作业中' }}</span></span>
           <span style="margin-left: 20px;">当前共打印： <span style="color: red">{{ printNum }}</span>份</span>
-          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="refresh">刷新</el-button>
-          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="showPrintHistory">查看打印历史</el-button>
-          <el-button style="margin-left: 20px;" type="warning" plain size="medium" @click="openStandPop">单机打印{{ isPrintStand ? '（打印中）': '' }}</el-button>
+          <el-button style="margin-left: 15px;" type="primary" size="medium" @click="refresh">刷新</el-button>
+          <el-button style="margin-left: 15px;" type="primary" size="medium" @click="showPrintHistory">查看打印历史</el-button>
+          <el-checkbox style="margin-left: 15px;" v-model="djMode" @change="changeDjMode">单机打印</el-checkbox>
+          <el-button style="margin-left: 15px;" type="warning" plain size="medium" @click="openStandPop" v-show="djMode">单机打印</el-button>
+          <el-button style="margin-left: 15px;" size="medium" @click="openReport(grfPath)" :loading="openBoxLoading" v-show="false">标签</el-button>
           <div class="jindu_tiao_div" v-show="standPrintPopShow">
             <div class="jindu_title">设置单机打印</div>
             <div class="jindu_context">
+              <div class="jindu_context_div">
+                <el-radio-group v-model="djSetValue" size="mini">
+                  <el-radio label="1" border size="mini">PLC称重触发打印</el-radio>
+                  <el-radio label="2" border size="mini">无需PLC称重触发</el-radio>
+                </el-radio-group>
+              </div>
               <div class="jindu_context_div">
                 <span>设置体重：</span>
                 <el-input v-model="standWeightValue" placeholder="请输入" style="width: 220px;margin-left: 5px;" type="number" size="small"></el-input>
@@ -37,11 +45,19 @@
         <div class="button-content" style="display: flex;align-items: center;">
           <el-button type="primary" icon="el-icon-switch-button" size="medium" :loading="runStatus" @click="runPrint">启动打印</el-button>
           <el-button type="danger" icon="el-icon-close" size="medium" @click="stopPrint">停止</el-button>
-          <el-button size="medium" @click="openReport(grfPath)" :loading="openBoxLoading">标签设计</el-button>
+          <el-divider direction="vertical"></el-divider>
+          <el-switch
+            @change="changeIfPrintWeight"
+            v-model="ifPrintWeight"
+            active-text="不打体重"
+            inactive-text="打印体重">
+          </el-switch>
+          <el-divider direction="vertical"></el-divider>
           <el-tooltip class="item" effect="dark" content="设置标签数据" placement="top-start">
             <el-button size="medium" type="primary" icon="el-icon-edit" circle @click="showLableDataView"></el-button>
           </el-tooltip>
-          <span style="margin-left: 25px;">选择打印机：</span>
+          <el-divider direction="vertical"></el-divider>
+          <span>打印机：</span>
           <el-select v-model="printerName" @change="changePrinterName" placeholder="请选择" style="width: 300px;">
             <el-option
               v-for="(item, index) in printers"
@@ -50,7 +66,9 @@
               :value="item.displayName">
             </el-option>
           </el-select>
-          <el-button type="primary" size="medium" @click="testPrint" style="margin-left: 15px;">测试打印</el-button>
+          <el-tooltip class="item" effect="dark" content="打印测试" placement="top-start">
+            <el-button type="primary" size="medium" icon="el-icon-printer" @click="testPrint" circle style="margin-left: 15px;"></el-button>
+          </el-tooltip>
         </div>
         <el-divider content-position="left">标签预览</el-divider>
         <div style="width: 100%; height: calc(100% - 158px);display: flex; align-items: center; justify-content: center;" v-loading="labelLoading">
@@ -167,12 +185,36 @@ export default {
       iboxtagSetValue: 0,
       cclassSetValue: '',
       namountSetValue: '', // 数量
-      cremarkSetValue: '' // 备注
+      cremarkSetValue: '', // 备注
+      ifPrintWeight: false,
+      djMode: false, // 单机模式
+      djSetValue: '1' // 单机打印模式
     };
   },
   watch: {},
   computed: {},
   methods: {
+    changeIfPrintWeight() {
+      if(this.ifPrintWeight) {
+        this.$message.success('已切换为标签不打印体重！')
+      } else {
+        this.$message.success('已切换为标签打印体重！')
+      }
+    },
+    changeDjMode(value) {
+      if(!value) {
+        // 说明关闭单机模式了
+        // 判断当前单机模式是否正在打印
+        if (this.isPrintStand) {
+          this.djMode = !value
+          this.$message.error('请先停止打印！');
+        } else {
+          // 若没在打印，取消单机模式时，要把开着的弹窗一起关闭，这里需要看下弹窗关闭的逻辑
+          this.standPrintPopShow = false
+        }
+      }
+      // 打开单机模式无需判断什么东西
+    },
     standPrint() {
       if(Object.keys(this.nowOrderObj).length === 0) {
         this.$message.error('打印已停止！无可打印的订单！')
@@ -198,17 +240,22 @@ export default {
       if (this.runStatus) {
         // 判断打印份数是否大于0
         if (this.standPrintNum >0) {
-          // 开启循环打印，展示当前打印了
+          // 判断当前打印模式，看看是PLC称重触发，还是标签软件主动打印
           this.isPrintStand = true
           this.isShowPrintJinDu = true
-          this.standPrint();
+          if(this.djSetValue === '2') {
+            // 说明当前是标签软件主动打印模式
+            // 开启循环打印，展示当前打印了
+            this.standPrint();
+          } else {
+            // 说明是PLC触发打印，无需主动打印啦，等待传过来重量再处理就好了
+          }
         } else {
-          this.$message.error('体重和打印份数必须为大于0的数字!')
+          this.$message.error('打印份数必须为大于0的数字!')
         }
       } else {
         this.$message.error('请先启动打印！')
       }
-      
     },
     stopPrintStand() {
       this.isPrintStand = false
@@ -456,8 +503,6 @@ export default {
             // 没有订单可打印了，展示空白即可
             this.nowOrderObj = {}
           }
-          // 展示图片
-          console.log(this.nowOrderObj)
           this.showLabelImg(this.nowOrderObj);
         }).catch((err)=> {
           this.$message.error('查询订单信息出错！稍后自动重试！');
@@ -501,10 +546,10 @@ export default {
     grwebapp.webapp_urlprotocol_startup();
     // 监听事件
     EventBus.$on('message-received', (data) => {
-      console.log('eventBus收到消息', data)
       if(data.event === 'ExportEnd' && data.type === 'img') {
         this.updateImgSrc();
-        if (this.isPrintStand) {
+        // 单机模式下，并且单机模式为标签软件主动触发，并且单机模式正在打印
+        if (this.djMode && this.djSetValue === '2' && this.isPrintStand) {
           this.standPrint()
         }
       }
@@ -528,7 +573,22 @@ export default {
         if (Object.keys(this.nowOrderObj).length === 0 && this.nowOrderObj.constructor === Object) {
           this.$message.error('未查询到当前有可打印的订单信息！请刷新重试！')
         } else {
-          this.printLable(obj.weight)
+          // 这里判断一下当前是单机模式还是非单机模式
+          if(this.djMode) { // 如果是单机模式
+            // 如果当前是单机模式，进一步判断当前单机是PLC触发重量还是连续打印模式，如果是连续打印模式忽略本次重量触发
+            if(this.djSetValue === '1') {
+              // 说明正处于单机模式下，PLC称重触发打印
+              // 去打印，同时处理单机打印的那些参数
+              this.standPrint()
+            }
+          } else { // 非单机模式下正常打印就好
+            // 非单机模式下打印需要判断当前设置的标签是不是打印体重
+            if(this.ifPrintWeight) {
+              this.printLable('')
+            } else {
+              this.printLable(obj.weight)
+            }
+          }
         }
       } else {
         this.$message.error('收到体重,未开始打印,不允许打印！')
@@ -572,7 +632,7 @@ export default {
           color: #606266;
           box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
           width: 400px;
-          height: 180px;
+          height: 220px;
           top: 83px;
           left: 600px;
           .jindu_title {
@@ -586,7 +646,7 @@ export default {
           }
           .jindu_context {
             width: 100%;
-            height: 80px;
+            height: 120px;
             .jindu_context_div {
               width: 100%;
               height: 40px;
