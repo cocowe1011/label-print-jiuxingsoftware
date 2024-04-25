@@ -112,6 +112,14 @@
         <el-input v-model="cclassSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
       </div>
       <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">数量：</div>
+        <el-input v-model="namountSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+      </div>
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
+        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">备注：</div>
+        <el-input v-model="cremarkSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+      </div>
+      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
         <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
         <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
       </div>
@@ -157,7 +165,9 @@ export default {
       nowPrintStandNum: 0,
       isShowPrintJinDu: false,
       iboxtagSetValue: 0,
-      cclassSetValue: ''
+      cclassSetValue: '',
+      namountSetValue: '', // 数量
+      cremarkSetValue: '' // 备注
     };
   },
   watch: {},
@@ -432,6 +442,13 @@ export default {
             this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
             this.nowOrderObj.iboxtag = this.iboxtagSetValue
             this.nowOrderObj.cclass = this.cclassSetValue
+            // 判断用户有没有设置备注和数量，如果有，替换为用户自己设置的数量和备注
+            if(this.cremarkSetValue !== '') {
+              this.nowOrderObj.cremark = this.cremarkSetValue
+            }
+            if(this.namountSetValue !== '') {
+              this.nowOrderObj.namount = this.namountSetValue
+            }
           } else {
             // 没有订单可打印了，展示空白即可
             this.nowOrderObj = {}
