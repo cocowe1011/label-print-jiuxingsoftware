@@ -123,7 +123,7 @@ app.on('ready', () => {
   setAppTray();
   if (process.env.NODE_ENV === 'production') {
     // 启动Java进程
-    spawn(path.join(__static, './jre', 'jre1.8.0_251', 'bin', 'java'), ['-Xmx4096m', '-Xms4096m', '-jar', path.join(__static, './jarlib', 'label-print-jiuxing-middle.jar')]);
+    spawn(path.join(__static, './jre', 'jre1.8.0_251', 'bin', 'java'), ['-Xmx1024m', '-Xms1024m', '-jar', path.join(__static, './jarlib', 'label-print-jiuxing-middle.jar')]);
   }
 
   // 开发者工具
