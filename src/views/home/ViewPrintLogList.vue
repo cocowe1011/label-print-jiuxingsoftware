@@ -1,6 +1,8 @@
 <template>
   <div style="width: 100%; height: 550px;">
     <div class="search">
+      <span>表ID</span>
+      <el-input placeholder="请输入表ID" v-model="tableId" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <span>生产订单ID</span>
       <el-input placeholder="请输入生产订单ID" v-model="idScproduct" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <span style="margin-left: 10px;">生产订单号</span>
@@ -176,7 +178,8 @@ export default {
       pageTotal: 0,
       idScproduct: '',
       ccodeScproduct: '',
-      boxIndex: ''
+      boxIndex: '',
+      tableId: ''
     };
   },
   watch: {},
@@ -187,6 +190,7 @@ export default {
       this.tableData = [];
       this.pageTotal = 0;
       const param = {
+        id: this.tableId,
         idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
         iindex: this.boxIndex,
@@ -212,6 +216,7 @@ export default {
     },
     async getOrderListSearchParam() {
       const param = {
+        id: this.tableId,
         idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
         iindex: this.boxIndex,

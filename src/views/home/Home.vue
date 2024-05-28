@@ -153,6 +153,7 @@ import ViewPrintLogList from './ViewPrintLogList.vue'
 const { exec } = require('child_process');
 const os = require('os');
 import { EventBus } from './eventBus';
+const remote = require('electron').remote
 export default {
   name: "Home",
   components: {
@@ -175,15 +176,18 @@ export default {
       openBoxLoading: false,
       labelLoading: false,
       setLabelDataView: false,
-      inspectionSetValue: '',
+      inspectionSetValue: '', // 检验
+      inspectionSetValueOld: '', // 检验-老
       standPrintPopShow: false,
       isPrintStand: false,
       standWeightValue: '',
       standPrintNum: 0,
       nowPrintStandNum: 0,
       isShowPrintJinDu: false,
-      iboxtagSetValue: 0,
-      cclassSetValue: '',
+      iboxtagSetValue: 0, // 标签号
+      iboxtagSetValueOld: 0, // 标签号-老
+      cclassSetValue: '', // 班次
+      cclassSetValueOld: '', // 班次-老
       namountSetValue: '', // 数量
       cremarkSetValue: '', // 备注
       ifPrintWeight: false,
@@ -277,6 +281,7 @@ export default {
       this.standPrintPopShow = false
     },
     rePrint(obj) {
+      obj.iindex = obj.iindex.padStart(5, '0')
       // 1、打印标签
       const printObj = {"Master":[obj]};
       var args = {
@@ -313,12 +318,22 @@ export default {
     handleClose() {
       this.dialogVisible = false
     },
-    showLableDataView() {
+    async showLableDataView() {
       // 查询本地配置
+      this.configData = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+      this.inspectionSetValue = this.configData.inspectionSetValue
+      this.inspectionSetValueOld = this.inspectionSetValue
+      this.iboxtagSetValue = this.configData.iboxtagSetValue
+      this.iboxtagSetValueOld = this.iboxtagSetValue
+      this.cclassSetValue = this.configData.cclassSetValue
+      this.cclassSetValueOld = this.cclassSetValue
       this.setLabelDataView = true;
     },
     handleCloseLableDataView() {
       this.setLabelDataView = false;
+      this.inspectionSetValue = this.inspectionSetValueOld;
+      this.iboxtagSetValue = this.iboxtagSetValueOld;
+      this.cclassSetValue = this.cclassSetValueOld;
       this.refresh()
     },
     async refresh(){
@@ -367,6 +382,7 @@ export default {
     },
     async printLable(weight) {
       const printObj = {"Master":[]};
+      this.nowOrderObj.iindex = this.nowOrderObj.iindex.padStart(5, '0')
       this.nowOrderObj.nweight = weight
       this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + weight + 'Kg' + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex + ',' + this.machineTask.machine
       printObj.Master = [this.nowOrderObj];
@@ -435,11 +451,53 @@ export default {
       this.$message.success('已停止！')
     },
     async saveLabelSetData() {
-      const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-      obj.inspectionSetValue = this.inspectionSetValue;
-      obj.iboxtagSetValue = this.iboxtagSetValue;
-      obj.cclassSetValue = this.cclassSetValue;
-      this.updateData(obj)
+      if(this.inspectionSetValueOld !== this.inspectionSetValue || this.iboxtagSetValueOld !== this.iboxtagSetValue || this.cclassSetValueOld !== this.cclassSetValue) {
+        this.$prompt('请输入登录账号的密码：', '敏感操作！验证用户！', {
+            confirmButtonText: '验证',
+            cancelButtonText: '取消',
+            inputType: 'password'
+          }).then(({ value }) => {
+            // 验证姓名是否正确
+            const param = {
+              userPassword: value,
+              userCode: remote.getGlobal('sharedObject').userInfo.userCode
+            }
+            HttpUtil.post('/userInfo/verifyPassword', param).then(async (res)=> {
+              if(res.data) {
+                this.$message.success('验证通过！');
+                const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+                obj.inspectionSetValue = this.inspectionSetValue;
+                obj.iboxtagSetValue = this.iboxtagSetValue;
+                obj.cclassSetValue = this.cclassSetValue;
+                this.inspectionSetValueOld = this.inspectionSetValue;
+                this.iboxtagSetValueOld = this.iboxtagSetValue;
+                this.cclassSetValueOld = this.cclassSetValue;
+                this.updateData(obj)
+              } else {
+                this.$message.error('验证未通过！');
+                this.inspectionSetValue = this.inspectionSetValueOld;
+                this.iboxtagSetValue = this.iboxtagSetValueOld;
+                this.cclassSetValue = this.cclassSetValueOld;
+              }
+            }).catch((err)=> {
+              this.$message.error('验证未通过！请重试！');
+              this.inspectionSetValue = this.inspectionSetValueOld;
+              this.iboxtagSetValue = this.iboxtagSetValueOld;
+              this.cclassSetValue = this.cclassSetValueOld;
+            });
+          }).catch(() => {
+            this.$message({
+              type: 'info',
+              message: '取消验证！'
+            });       
+          });
+      } else {
+        const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+        obj.inspectionSetValue = this.inspectionSetValue;
+        obj.iboxtagSetValue = this.iboxtagSetValue;
+        obj.cclassSetValue = this.cclassSetValue;
+        this.updateData(obj)
+      }
     },
     async changePrinterName(value) {
       const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
@@ -492,6 +550,7 @@ export default {
             this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
             this.nowOrderObj.iboxtag = this.iboxtagSetValue
             this.nowOrderObj.cclass = this.cclassSetValue
+            this.nowOrderObj.iindex = this.nowOrderObj.iindex.padStart(5, '0')
             // 判断用户有没有设置备注和数量，如果有，替换为用户自己设置的数量和备注
             if(this.cremarkSetValue !== '') {
               this.nowOrderObj.cremark = this.cremarkSetValue
