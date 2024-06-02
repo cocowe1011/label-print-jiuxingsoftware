@@ -112,34 +112,76 @@
     <el-dialog
       title="设置标签数据"
       :visible.sync="setLabelDataView"
-      width="300px"
+      width="600px"
       :before-close="handleCloseLableDataView"
       append-to-body
       destroy-on-close
       >
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">标签号：</div>
-        <el-input v-model="iboxtagSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
-      </div>
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">检验：</div>
-        <el-input v-model="inspectionSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
-      </div>
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">班次：</div>
-        <el-input v-model="cclassSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
-      </div>
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">数量：</div>
-        <el-input v-model="namountSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
-      </div>
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <div style="font-size: 14px;width:60px;height:20px;display: flex;justify-content:flex-end;">备注：</div>
-        <el-input v-model="cremarkSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
-      </div>
-      <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;">
-        <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
-        <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
+      <div style="height:450px;width:100%;">
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户：</div>
+          <el-input v-model="customerSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户品名：</div>
+          <el-input v-model="customerNameSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">标签号：</div>
+          <el-input v-model="iboxtagSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">委印单号：</div>
+          <el-input v-model="orderNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户批号：</div>
+          <el-input v-model="customerNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户料号：</div>
+          <el-input v-model="customerMaterialNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">生产批号：</div>
+          <el-input v-model="ccodeScproductSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">班次：</div>
+          <el-input v-model="cclassSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">产品编号：</div>
+          <el-input v-model="ccodeScaproductSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">版本号：</div>
+          <el-input v-model="iversSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">数量：</div>
+          <el-input v-model="namountSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">毛重：</div>
+          <el-input v-model="nweightSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;" type="number"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">生产日期：</div>
+          <el-input v-model="ddateSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">检验：</div>
+          <el-input v-model="inspectionSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+          <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">备注：</div>
+          <el-input v-model="cremarkSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+        </div>
+        <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;float: left;">
+          <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
+          <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -150,6 +192,7 @@ import { Debugger, ipcRenderer } from 'electron'
 import grwebapp from '@/utils/grwebapp'
 import HttpUtil from '@/utils/HttpUtil'
 import ViewPrintLogList from './ViewPrintLogList.vue'
+import moment from 'moment'
 const { exec } = require('child_process');
 const os = require('os');
 import { EventBus } from './eventBus';
@@ -192,7 +235,17 @@ export default {
       cremarkSetValue: '', // 备注
       ifPrintWeight: false,
       djMode: false, // 单机模式
-      djSetValue: '1' // 单机打印模式
+      djSetValue: '1', // 单机打印模式
+      customerSetValue: '', // 客户名称
+      customerNameSetValue: '', // 客户品名
+      orderNumberSetValue: '', // 委印单号
+      customerNumberSetValue: '', // 客户批号
+      customerMaterialNumberSetValue: '', // 客户料号
+      ccodeScproductSetValue: '', // 生产批号
+      ccodeScaproductSetValue: '', // 产品编号
+      iversSetValue: '', // 版本号
+      ddateSetValue: '', // 生产日期
+      nweightSetValue: '' // 体重
     };
   },
   watch: {},
@@ -557,6 +610,46 @@ export default {
             }
             if(this.namountSetValue !== '') {
               this.nowOrderObj.namount = this.namountSetValue
+            }
+            // 客户名称
+            if(this.customerSetValue !== '') {
+              this.nowOrderObj.customer = this.customerSetValue
+            }
+            // 客户品名
+            if(this.customerNameSetValue !== '') {
+              this.nowOrderObj.customerName = this.customerNameSetValue
+            }
+            // 委印单号
+            if(this.orderNumberSetValue !== '') {
+              this.nowOrderObj.orderNumber = this.orderNumberSetValue
+            }
+            // 客户批号
+            if(this.customerNumberSetValue !== '') {
+              this.nowOrderObj.customerNumber = this.customerNumberSetValue
+            }
+            // 客户料号
+            if(this.customerMaterialNumberSetValue !== '') {
+              this.nowOrderObj.customerMaterialNumber = this.customerMaterialNumberSetValue
+            }
+            // 生产批号
+            if(this.ccodeScproductSetValue !== '') {
+              this.nowOrderObj.ccodeScproduct = this.ccodeScproductSetValue
+            }
+            // 产品编号
+            if(this.ccodeScaproductSetValue !== '') {
+              this.nowOrderObj.ccodeScaproduct = this.ccodeScaproductSetValue
+            }
+            // 版本号
+            if(this.iversSetValue !== '') {
+              this.nowOrderObj.ivers = this.iversSetValue
+            }
+            // 生产日期
+            if(this.ddateSetValue !== '') {
+              this.nowOrderObj.dstatuschange = this.ddateSetValue
+            }
+            // nweightSetValue 体重
+            if(this.nweightSetValue !== '') {
+              this.nowOrderObj.nweight = this.nweightSetValue
             }
           } else {
             // 没有订单可打印了，展示空白即可
