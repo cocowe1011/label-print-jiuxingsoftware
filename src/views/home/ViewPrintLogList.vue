@@ -3,8 +3,6 @@
     <div class="search">
       <span>表ID</span>
       <el-input placeholder="请输入表ID" v-model="tableId" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
-      <span>生产订单ID</span>
-      <el-input placeholder="请输入生产订单ID" v-model="idScproduct" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <span style="margin-left: 10px;">生产订单号</span>
       <el-input placeholder="请输入生产订单号" v-model="ccodeScproduct" style="width: 200px;margin-left: 10px;" size="small" clearable></el-input>
       <span style="margin-left: 10px;">箱序号</span>
@@ -26,23 +24,8 @@
           fixed="left">
         </el-table-column>
         <el-table-column
-          prop="idScproduct"
-          label="生产订单ID"
-          width="180">
-        </el-table-column>
-        <el-table-column
-          prop="idRequest"
-          label="产品版本ID"
-          width="160">
-        </el-table-column>
-        <el-table-column
           prop="ccodeScproduct"
           label="生产订单号"
-          width="160">
-        </el-table-column>
-        <el-table-column
-          prop="reprintingTime"
-          label="补打印次数"
           width="160">
         </el-table-column>
         <el-table-column
@@ -96,21 +79,6 @@
           width="160">
         </el-table-column>
         <el-table-column
-          prop="length"
-          label="外箱长度"
-          width="160">
-        </el-table-column>
-        <el-table-column
-          prop="width"
-          label="外箱宽度"
-          width="160">
-        </el-table-column>
-        <el-table-column
-          prop="height"
-          label="外箱高度"
-          width="160">
-        </el-table-column>
-        <el-table-column
           prop="machine"
           label="作业机台名称"
           width="160">
@@ -128,11 +96,6 @@
         <el-table-column
           prop="customer"
           label="客户名称"
-          width="160">
-        </el-table-column>
-        <el-table-column
-          prop="team"
-          label="班组名称"
           width="160">
         </el-table-column>
         <el-table-column
@@ -176,7 +139,6 @@ export default {
       pageSize: 12,
       pageNum: 1,
       pageTotal: 0,
-      idScproduct: '',
       ccodeScproduct: '',
       boxIndex: '',
       tableId: ''
@@ -191,7 +153,6 @@ export default {
       this.pageTotal = 0;
       const param = {
         id: this.tableId,
-        idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
         iindex: this.boxIndex,
         pageNum: this.pageNum,
@@ -217,7 +178,6 @@ export default {
     async getOrderListSearchParam() {
       const param = {
         id: this.tableId,
-        idScproduct: this.idScproduct,
         ccodeScproduct: this.ccodeScproduct,
         iindex: this.boxIndex,
         pageNum: this.pageNum,

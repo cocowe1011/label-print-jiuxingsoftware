@@ -643,13 +643,13 @@ export default {
             if(this.iversSetValue !== '') {
               this.nowOrderObj.ivers = this.iversSetValue
             }
-            // 生产日期
-            if(this.ddateSetValue !== '') {
-              this.nowOrderObj.dstatuschange = this.ddateSetValue
-            }
             // nweightSetValue 体重
             if(this.nweightSetValue !== '') {
               this.nowOrderObj.nweight = this.nweightSetValue
+            }
+            // 生产日期
+            if(this.ddateSetValue !== '') {
+              this.nowOrderObj.dstatuschange = this.ddateSetValue
             }
           } else {
             // 没有订单可打印了，展示空白即可
