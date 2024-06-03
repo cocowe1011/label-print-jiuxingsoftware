@@ -120,11 +120,11 @@
       <div style="height:450px;width:100%;">
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户：</div>
-          <el-input v-model="customerSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="customerSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户品名：</div>
-          <el-input v-model="customerNameSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="customerNameSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">标签号：</div>
@@ -132,19 +132,19 @@
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">委印单号：</div>
-          <el-input v-model="orderNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="orderNumberSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户批号：</div>
-          <el-input v-model="customerNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="customerNumberSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">客户料号：</div>
-          <el-input v-model="customerMaterialNumberSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="customerMaterialNumberSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">生产批号：</div>
-          <el-input v-model="ccodeScproductSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="ccodeScproductSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">班次：</div>
@@ -152,7 +152,7 @@
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">产品编号：</div>
-          <el-input v-model="ccodeScaproductSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="ccodeScaproductSetValue" :disabled="!isCanUpdate" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">版本号：</div>
@@ -168,19 +168,21 @@
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">生产日期：</div>
-          <el-input v-model="ddateSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-date-picker style="width: 200px;margin-left: 5px;" :disabled="!isCanUpdate" v-model="ddateSetValue" type="date" :editable="false" placeholder="选择日期" clearable>
+    </el-date-picker>
         </div>
         <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">检验：</div>
           <el-input v-model="inspectionSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
         </div>
-        <div style="height: 50px;width: 50%;display: flex;align-items: center;justify-content: center;float: left;">
+        <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;float: left;">
           <div style="font-size: 14px;width:100px;height:20px;display: flex;justify-content:flex-end;">备注：</div>
-          <el-input v-model="cremarkSetValue" placeholder="请输入内容" style="width: 200px;margin-left: 5px;"></el-input>
+          <el-input v-model="cremarkSetValue" placeholder="请输入内容" style="width: 512px;margin-left: 5px;"></el-input>
         </div>
         <div style="height: 50px;width: 100%;display: flex;align-items: center;justify-content: center;float: left;">
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
           <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
+          <el-button type="text" @click="showIsUpdate">授权修改权限</el-button>
         </div>
       </div>
     </el-dialog>
@@ -220,7 +222,6 @@ export default {
       labelLoading: false,
       setLabelDataView: false,
       inspectionSetValue: '', // 检验
-      inspectionSetValueOld: '', // 检验-老
       standPrintPopShow: false,
       isPrintStand: false,
       standWeightValue: '',
@@ -228,9 +229,7 @@ export default {
       nowPrintStandNum: 0,
       isShowPrintJinDu: false,
       iboxtagSetValue: 0, // 标签号
-      iboxtagSetValueOld: 0, // 标签号-老
       cclassSetValue: '', // 班次
-      cclassSetValueOld: '', // 班次-老
       namountSetValue: '', // 数量
       cremarkSetValue: '', // 备注
       ifPrintWeight: false,
@@ -244,8 +243,9 @@ export default {
       ccodeScproductSetValue: '', // 生产批号
       ccodeScaproductSetValue: '', // 产品编号
       iversSetValue: '', // 版本号
-      ddateSetValue: '', // 生产日期
-      nweightSetValue: '' // 体重
+      ddateSetValue: null, // 生产日期
+      nweightSetValue: '', // 体重
+      isCanUpdate: false // 是否已经授权可以修改内容
     };
   },
   watch: {},
@@ -375,19 +375,43 @@ export default {
       // 查询本地配置
       this.configData = JSON.parse(await ipcRenderer.invoke('read-config-file'))
       this.inspectionSetValue = this.configData.inspectionSetValue
-      this.inspectionSetValueOld = this.inspectionSetValue
       this.iboxtagSetValue = this.configData.iboxtagSetValue
-      this.iboxtagSetValueOld = this.iboxtagSetValue
       this.cclassSetValue = this.configData.cclassSetValue
-      this.cclassSetValueOld = this.cclassSetValue
       this.setLabelDataView = true;
+      this.isCanUpdate = false
     },
     handleCloseLableDataView() {
       this.setLabelDataView = false;
-      this.inspectionSetValue = this.inspectionSetValueOld;
-      this.iboxtagSetValue = this.iboxtagSetValueOld;
-      this.cclassSetValue = this.cclassSetValueOld;
+      this.isCanUpdate = false
       this.refresh()
+    },
+    showIsUpdate() {
+      this.$prompt('请输入登录账号的密码：', '敏感操作！验证用户！', {
+        confirmButtonText: '验证',
+        cancelButtonText: '取消',
+        inputType: 'password'
+      }).then(({ value }) => {
+        // 验证姓名是否正确
+        const param = {
+          userPassword: value,
+          userCode: remote.getGlobal('sharedObject').userInfo.userCode
+        }
+        HttpUtil.post('/userInfo/verifyPassword', param).then(async (res)=> {
+          if(res.data) {
+            this.$message.success('验证通过！');
+            this.isCanUpdate = true
+          } else {
+            this.$message.error('验证未通过！');
+          }
+        }).catch((err)=> {
+          this.$message.error('验证未通过！请重试！');
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消验证！'
+        });       
+      });
     },
     async refresh(){
       // 重新查询订单信息
@@ -504,53 +528,11 @@ export default {
       this.$message.success('已停止！')
     },
     async saveLabelSetData() {
-      if(this.inspectionSetValueOld !== this.inspectionSetValue || this.iboxtagSetValueOld !== this.iboxtagSetValue || this.cclassSetValueOld !== this.cclassSetValue) {
-        this.$prompt('请输入登录账号的密码：', '敏感操作！验证用户！', {
-            confirmButtonText: '验证',
-            cancelButtonText: '取消',
-            inputType: 'password'
-          }).then(({ value }) => {
-            // 验证姓名是否正确
-            const param = {
-              userPassword: value,
-              userCode: remote.getGlobal('sharedObject').userInfo.userCode
-            }
-            HttpUtil.post('/userInfo/verifyPassword', param).then(async (res)=> {
-              if(res.data) {
-                this.$message.success('验证通过！');
-                const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-                obj.inspectionSetValue = this.inspectionSetValue;
-                obj.iboxtagSetValue = this.iboxtagSetValue;
-                obj.cclassSetValue = this.cclassSetValue;
-                this.inspectionSetValueOld = this.inspectionSetValue;
-                this.iboxtagSetValueOld = this.iboxtagSetValue;
-                this.cclassSetValueOld = this.cclassSetValue;
-                this.updateData(obj)
-              } else {
-                this.$message.error('验证未通过！');
-                this.inspectionSetValue = this.inspectionSetValueOld;
-                this.iboxtagSetValue = this.iboxtagSetValueOld;
-                this.cclassSetValue = this.cclassSetValueOld;
-              }
-            }).catch((err)=> {
-              this.$message.error('验证未通过！请重试！');
-              this.inspectionSetValue = this.inspectionSetValueOld;
-              this.iboxtagSetValue = this.iboxtagSetValueOld;
-              this.cclassSetValue = this.cclassSetValueOld;
-            });
-          }).catch(() => {
-            this.$message({
-              type: 'info',
-              message: '取消验证！'
-            });       
-          });
-      } else {
-        const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
-        obj.inspectionSetValue = this.inspectionSetValue;
-        obj.iboxtagSetValue = this.iboxtagSetValue;
-        obj.cclassSetValue = this.cclassSetValue;
-        this.updateData(obj)
-      }
+      const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
+      obj.inspectionSetValue = this.inspectionSetValue;
+      obj.iboxtagSetValue = this.iboxtagSetValue;
+      obj.cclassSetValue = this.cclassSetValue;
+      this.updateData(obj)
     },
     async changePrinterName(value) {
       const obj = JSON.parse(await ipcRenderer.invoke('read-config-file'))
@@ -648,8 +630,8 @@ export default {
               this.nowOrderObj.nweight = this.nweightSetValue
             }
             // 生产日期
-            if(this.ddateSetValue !== '') {
-              this.nowOrderObj.dstatuschange = this.ddateSetValue
+            if(this.ddateSetValue !== null) {
+              this.nowOrderObj.dstatuschange = moment(this.ddateSetValue).format('YYYY-MM-DD')
             }
           } else {
             // 没有订单可打印了，展示空白即可
