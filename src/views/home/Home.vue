@@ -458,6 +458,10 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
     },
     async printLable(weight) {
+      // nweightSetValue 体重
+      if(this.nweightSetValue !== '' && weight !== '') {
+        weight = this.nweightSetValue
+      }
       const printObj = {"Master":[]};
       this.nowOrderObj.iindex = this.nowOrderObj.iindex.padStart(5, '0')
       this.nowOrderObj.nweight = weight
