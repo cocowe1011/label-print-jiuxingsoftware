@@ -465,7 +465,7 @@ export default {
       const printObj = {"Master":[]};
       this.nowOrderObj.iindex = this.nowOrderObj.iindex.padStart(5, '0')
       this.nowOrderObj.nweight = weight
-      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + weight + 'Kg' + ',' + this.nowOrderObj.idScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex + ',' + this.machineTask.machine
+      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + this.nowOrderObj.ccodeScproduct + ',' + this.nowOrderObj.dstatuschange + ',' + this.nowOrderObj.iindex + ',' + this.machineTask.machine + ',' + weight + 'Kg'
       printObj.Master = [this.nowOrderObj];
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
