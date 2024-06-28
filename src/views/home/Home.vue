@@ -428,24 +428,10 @@ export default {
     },
     testPrint() {
       const printObj = {"Master":[]};
-      const obj = [{
-        customer: '乐泰药业（兰西）有限公司',
-        customerName: '12gX3袋亮甲牌肤泰杀菌粉小盒 2312版',
-        orderNumber: 'CGJH1-102-X-SC231205-10',
-        customerNumber: '202404080001A',
-        customerMaterialNumber: 'LXSIF1203-2023121101',
-        ccodeScproduct: 'BX2024010089',
-        ccodeScaproduct: '0101001550',
-        namount: '1000',
-        machine: '06/乙',
-        cclass: '06/测试',
-        qrCode: '01,420x325x310,16.35K,0101000967,2023-12-03,000357',
-        iIndex: '00001',
-        weight: '13.66',
-        inspection: '合格/QC05',
-        cremark: '测试备注'
-      }]
-      printObj.Master = obj;
+      this.nowOrderObj.iindex = '0'
+      this.nowOrderObj.nweight = '0'
+      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + this.nowOrderObj.ccodeScproduct + ',' + this.nowOrderObj.dstatuschange + ',0,' + this.machineTask.machine + ',0Kg'
+      printObj.Master = [this.nowOrderObj];
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
         // type: "pdf",
@@ -585,7 +571,7 @@ export default {
             this.nowOrderObj = res.data
             this.nowOrderObj.machine = this.machineTask.machine
             this.nowOrderObj.inspection = this.inspectionSetValue
-            this.nowOrderObj.qrCode = (this.machineTask.machine === 'M-5#ZHJ' ? '02' : '01') + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.width
+            this.nowOrderObj.qrCode = (this.machineTask.machine === 'M-5#ZHJ' ? '02' : '01') + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.height
             this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
             this.nowOrderObj.iboxtag = this.iboxtagSetValue
             this.nowOrderObj.cclass = this.cclassSetValue
