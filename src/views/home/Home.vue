@@ -428,10 +428,11 @@ export default {
     },
     testPrint() {
       const printObj = {"Master":[]};
-      this.nowOrderObj.iindex = '0'
-      this.nowOrderObj.nweight = '0'
-      this.nowOrderObj.qrCode = this.nowOrderObj.qrCode + ',' + this.nowOrderObj.ccodeScproduct + ',' + this.nowOrderObj.dstatuschange + ',0,' + this.machineTask.machine + ',0Kg'
-      printObj.Master = [this.nowOrderObj];
+      const tempObj = JSON.parse(JSON.stringify(this.nowOrderObj));
+      tempObj.iindex = '0'
+      tempObj.nweight = '0'
+      tempObj.qrCode = tempObj.qrCode + ',' + tempObj.ccodeScproduct + ',' + tempObj.dstatuschange + ',0,' + this.machineTask.machine + ',0Kg'
+      printObj.Master = [tempObj];
       var args = {
         type: "print", //设置不同的属性可以执行不同的任务，如：preview print pdf xls csv txt rtf img grd
         // type: "pdf",
