@@ -445,6 +445,7 @@ export default {
       grwebapp.webapp_ws_ajax_run(args);
     },
     async printLable(weight) {
+      this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 开始打印订单，体重：'+weight+'当前订单信息：'+JSON.stringify(this.nowOrderObj));
       // nweightSetValue 体重
       if(this.nweightSetValue !== '' && weight !== '') {
         weight = this.nweightSetValue
@@ -475,6 +476,7 @@ export default {
       this.getPrintInfo();
     },
     async dealAfterPrint(param) {
+      this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 更新打印订单信息，入参：'+JSON.stringify(param));
       await HttpUtil.post('/order/dealAfterPrint', param).then((res)=> {
         // 输出打印成功的日志
         if(res.data>0) {
@@ -486,9 +488,11 @@ export default {
       }).catch((err)=> {
         // 失败了给予失败提示
         this.$message.error('日志插入失败！即将重新打印')
+        this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 更新打印订单信息，失败：'+ err);
       });
     },
     showLabelImg(param) {
+      this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 生成展示pdf，入参：' + JSON.stringify(param));
       const obj = [param]
       const printObj = {"Master":[]};
       printObj.Master = obj;
@@ -566,6 +570,7 @@ export default {
       if (this.machineTask != null) {
         // 查询按照箱编号正序排序的第一个订单信息
         const param = {"machine": this.machineTask.machine, "idScproduct": this.machineTask.idScproduct}
+        this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 进入查询订单信息方法，入参：'+JSON.stringify(param));
         // 查询信息时将订单状态给更新，防止其他机台操作数据，保证数据原子性
         HttpUtil.post('/order/getOrderBoxInfo', param).then((res)=> {
           if(res.data) {
@@ -628,9 +633,11 @@ export default {
             // 没有订单可打印了，展示空白即可
             this.nowOrderObj = {}
           }
+          this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 查询完毕，出参：'+JSON.stringify(this.nowOrderObj));
           this.showLabelImg(this.nowOrderObj);
         }).catch((err)=> {
           this.$message.error('查询订单信息出错！稍后自动重试！');
+          this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 查询订单信息出错！稍后自动重试！');
         });
       } else {
         this.nowOrderObj = {}
@@ -665,6 +672,10 @@ export default {
         this.openBoxLoading = false
         this.$message.success('文件已成功打开！');
       });
+    },
+    createLog(msg) {
+      // 同时往本地写日志
+      ipcRenderer.send('writeLogToLocal', msg);
     }
   },
   async created() {
@@ -694,6 +705,7 @@ export default {
     ipcRenderer.on('getWeightJson', (event, obj) => {
       // 1、判断有没有开启打印按钮
       if (this.runStatus) {
+        this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 收到PLC体重信息，体重：'+ obj.weight + '，模式:'+ (this.djMode?'单机模式':'普通模式') +'，当前订单信息：' + JSON.stringify(this.nowOrderObj));
         // 2、打印当前展示的标签，将标签打印，等待下一次体重的发送
         if (Object.keys(this.nowOrderObj).length === 0 && this.nowOrderObj.constructor === Object) {
           this.$message.error('未查询到当前有可打印的订单信息！请刷新重试！')

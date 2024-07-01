@@ -171,6 +171,10 @@ app.on('ready', () => {
   ipcMain.handle('update-config-file', async (event, arg) => {
     await fs.writeFileSync("D://label_temp_data/config/config.json", JSON.stringify(arg))
   })
+  // 定义自定义事件
+  ipcMain.on('writeLogToLocal', (event, arg) => {
+    fs.appendFile("D://css_temp_data/log/" + ((new Date()).toLocaleDateString() + ".txt").replaceAll('/','-'), arg + '\n', function(err) {});
+  })
 });
 
 function createFile(fileNameVal) {
