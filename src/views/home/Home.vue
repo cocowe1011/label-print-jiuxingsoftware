@@ -183,6 +183,7 @@
           <el-button style="margin-left: 20px;" type="primary" size="medium" @click="saveLabelSetData">保存</el-button>
           <el-button type="danger" size="medium" style="margin-left: 15px;" @click="handleCloseLableDataView">关闭</el-button>
           <el-button type="text" @click="showIsUpdate">授权修改权限</el-button>
+          <el-button size="medium" type="warning" plain style="margin-left: 15px;" @click="clearAllData">换批次清空</el-button>
         </div>
       </div>
     </el-dialog>
@@ -676,6 +677,48 @@ export default {
     createLog(msg) {
       // 同时往本地写日志
       ipcRenderer.send('writeLogToLocal', msg);
+    },
+    clearAllData() {
+      this.$prompt('请输入登录账号的密码：', '敏感操作！验证用户！', {
+        confirmButtonText: '验证',
+        cancelButtonText: '取消',
+        inputType: 'password'
+      }).then(({ value }) => {
+        // 验证姓名是否正确
+        const param = {
+          userPassword: value,
+          userCode: remote.getGlobal('sharedObject').userInfo.userCode
+        }
+        HttpUtil.post('/userInfo/verifyPassword', param).then(async (res)=> {
+          if(res.data) {
+            this.$message.success('验证通过！');
+            this.customerSetValue = '';
+            this.customerNameSetValue = '';
+            this.iboxtagSetValue = '';
+            this.orderNumberSetValue = '';
+            this.customerNumberSetValue = '';
+            this.customerMaterialNumberSetValue = '';
+            this.ccodeScproductSetValue = '';
+            this.cclassSetValue = '';
+            this.ccodeScaproductSetValue = '';
+            this.iversSetValue = '';
+            this.namountSetValue = '';
+            this.nweightSetValue = '';
+            this.ddateSetValue = null;
+            this.inspectionSetValue = '';
+            this.cremarkSetValue = '';
+          } else {
+            this.$message.error('验证未通过！');
+          }
+        }).catch((err)=> {
+          this.$message.error('验证未通过！请重试！');
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消验证！'
+        });       
+      });
     }
   },
   async created() {
