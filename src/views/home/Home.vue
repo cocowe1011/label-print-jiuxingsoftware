@@ -569,6 +569,7 @@ export default {
     },
     async getPrintInfo() {
       if (this.machineTask != null) {
+        this.nowOrderObj = {}
         // 查询按照箱编号正序排序的第一个订单信息
         const param = {"machine": this.machineTask.machine, "idScproduct": this.machineTask.idScproduct}
         this.createLog(moment().format('YYYY-MM-DD HH:mm:ss') + ' 进入查询订单信息方法，入参：'+JSON.stringify(param));

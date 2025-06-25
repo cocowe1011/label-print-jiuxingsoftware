@@ -173,7 +173,7 @@ app.on('ready', () => {
   })
   // 定义自定义事件
   ipcMain.on('writeLogToLocal', (event, arg) => {
-    fs.appendFile("D://css_temp_data/log/" + ((new Date()).toLocaleDateString() + ".txt").replaceAll('/','-'), arg + '\n', function(err) {});
+    fs.appendFile("D://label_temp_data/log/" + ((new Date()).toLocaleDateString() + ".txt").replaceAll('/','-'), arg + '\n', function(err) {});
   })
 });
 
