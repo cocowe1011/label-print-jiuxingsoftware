@@ -1,8 +1,8 @@
 <template>
   <div :class="['sm-main', plcStatus?'':'offline'] " v-drag>
     <div class="inner">
-      <i class="el-icon-check icon" style="font-size: 28px; color: #fff" v-if="plcStatus"></i>
-      <i class="el-icon-close icon" style="font-size: 28px; color: #fff" v-else></i>
+      <i class="el-icon-check" style="font-size: 28px; color: #fff" v-if="plcStatus"></i>
+      <i class="el-icon-close" style="font-size: 28px; color: #fff" v-else></i>
         {{ plcStatus ? 'PLC已连接' : 'PLC未连接' }}
     </div>
   </div>
@@ -129,19 +129,5 @@ export default {
 }
 .offline {
   background-color: #f56c6c !important;
-}
-.icon {
-  animation: icon-animation 2s infinite;
-}
-@keyframes icon-animation {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 </style>

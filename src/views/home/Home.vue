@@ -561,6 +561,12 @@ export default {
     },
     async updateData(data) {
       try {
+        // 检查data是否为有效对象
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          this.$message.error('数据格式错误，请重启软件，重新进行保存')
+          return
+        }
+        
         await ipcRenderer.invoke('update-config-file', data)
         this.$message.success('设置成功！')
       } catch (error) {
