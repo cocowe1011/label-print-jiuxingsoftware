@@ -585,7 +585,7 @@ export default {
             this.nowOrderObj = res.data
             this.nowOrderObj.machine = this.machineTask.machine
             this.nowOrderObj.inspection = this.inspectionSetValue
-            this.nowOrderObj.qrCode = (this.machineTask.machine === 'M-5#ZHJ' ? '02' : '01') + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.height
+            this.nowOrderObj.qrCode = (this.machineTask.machine === 'M-4#CZHJ20230630' ? '03' : (this.machineTask.machine === 'M-5#ZHJ' ? '02' : '01')) + ',' + this.nowOrderObj.length + 'x' + this.nowOrderObj.width + 'x' + this.nowOrderObj.height
             this.nowOrderObj.nweight = this.nowOrderObj.nweight === 0 ? '': this.nowOrderObj.nweight
             this.nowOrderObj.iboxtag = this.iboxtagSetValue
             this.nowOrderObj.cclass = this.cclassSetValue
