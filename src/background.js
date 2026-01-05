@@ -186,11 +186,12 @@ app.on('ready', () => {
   });
 
   client.on('data', (data) => {
-    console.log('received data：', data);
+    console.log('received data:', data);
+    console.log('received data:', data.toString('ascii').trim());
     try {
       // server发过来的数据是0008522,0000037,01,1,0007798
-      // 提取第一个逗号前的字符串
-      const dataStr = data.toString().trim();
+      // Buffer中每个字节本身就是ASCII码值，直接转换为字符串
+      const dataStr = data.toString('ascii').trim();
       const firstPart = dataStr.split(',')[0].trim();
       
       // 进行重量转换 0008522是8.522Kg
