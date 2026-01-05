@@ -173,16 +173,12 @@ app.on('ready', () => {
 
   client.on('close', () => {
     console.log('Client connection closed');
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('dealSocketStatus', false);
-    }
+    mainWindow.webContents.send('dealSocketStatus', false);
   });
 
   client.connect(PORT, HOST, () => {
     console.log(`Connected to server: ${HOST}:${PORT}`);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('dealSocketStatus', true);
-    }
+    mainWindow.webContents.send('dealSocketStatus', true);
   });
 
   client.on('data', (data) => {
@@ -192,21 +188,23 @@ app.on('ready', () => {
       // server发过来的数据是0008522,0000037,01,1,0007798
       // Buffer中每个字节本身就是ASCII码值，直接转换为字符串
       const dataStr = data.toString('ascii').trim();
+      console.log('dataStr:', dataStr);
       const firstPart = dataStr.split(',')[0].trim();
+      console.log('firstPart:', firstPart);
       
       // 进行重量转换 0008522是8.522Kg
       const weightNum = parseInt(firstPart, 10);
-      
+      console.log('weightNum:', weightNum);
       if (!isNaN(weightNum)) {
         // 转换为保留3位小数的字符串
         const weightVal = (weightNum / 1000).toFixed(3);
+        console.log('weightVal:', weightVal);
         const jsonToSend = { weight: weightVal };
-        
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          // 调用mainWindow.webContents.send('getWeightJson', JSON.parse(*data*))
-          mainWindow.webContents.send('getWeightJson', jsonToSend);
-          mainWindow.webContents.send('dealSocketStatus', true);
-        }
+        console.log('jsonToSend:', jsonToSend);
+        // 调用mainWindow.webContents.send('getWeightJson', JSON.parse(*data*))
+        mainWindow.webContents.send('getWeightJson', jsonToSend);
+        console.log('mainWindow.webContents.send:', mainWindow.webContents.send('getWeightJson', jsonToSend));
+        mainWindow.webContents.send('dealSocketStatus', true);
       }
     } catch (e) {
       console.error('Error parsing data:', e);
