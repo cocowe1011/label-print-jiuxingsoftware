@@ -182,29 +182,18 @@ app.on('ready', () => {
   });
 
   client.on('data', (data) => {
-    console.log('received data:', data);
-    console.log('received data:', data.toString('ascii').trim());
     try {
-      // server发过来的数据是0008522,0000037,01,1,0007798
-      // Buffer中每个字节本身就是ASCII码值，直接转换为字符串
-      // 使用正则替换掉所有非数字和非逗号的字符，避免控制字符影响
       const dataStr = data.toString('ascii').replace(/[^\d,]/g, '').trim();
-      console.log('dataStr:', dataStr);
       const firstPart = dataStr.split(',')[0].trim();
-      console.log('firstPart:', firstPart);
       
       // 进行重量转换 0008522是8.522Kg
       const weightNum = parseInt(firstPart, 10);
-      console.log('weightNum:', weightNum);
       if (!isNaN(weightNum)) {
         // 转换为保留3位小数的字符串
         const weightVal = (weightNum / 1000).toFixed(3);
-        console.log('weightVal:', weightVal);
         const jsonToSend = { weight: weightVal };
-        console.log('jsonToSend:', jsonToSend);
         
         if (mainWindow && !mainWindow.isDestroyed()) {
-           // 调用mainWindow.webContents.send('getWeightJson', JSON.parse(*data*))
            mainWindow.webContents.send('getWeightJson', jsonToSend);
            mainWindow.webContents.send('dealSocketStatus', true);
         }
