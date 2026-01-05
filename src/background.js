@@ -186,6 +186,7 @@ app.on('ready', () => {
   });
 
   client.on('data', (data) => {
+    console.log('received data：', data);
     try {
       // server发过来的数据是0008522,0000037,01,1,0007798
       // 提取第一个逗号前的字符串
