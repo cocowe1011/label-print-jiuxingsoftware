@@ -160,6 +160,56 @@ app.on('ready', () => {
   server.listen(2000, () => {
     console.log('Server listening on port 2000');
   });
+
+  // 创建 Socket 客户端连接
+  const client = new net.Socket();
+  const HOST = '192.168.10.253';
+  const PORT = 5700;
+
+  client.on('error', (err) => {
+    console.error(`Client connection error: ${err.message}`);
+    // 失败了也不要影响其他流程
+  });
+
+  client.on('close', () => {
+    console.log('Client connection closed');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('dealSocketStatus', false);
+    }
+  });
+
+  client.connect(PORT, HOST, () => {
+    console.log(`Connected to server: ${HOST}:${PORT}`);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('dealSocketStatus', true);
+    }
+  });
+
+  client.on('data', (data) => {
+    try {
+      // server发过来的数据是0008522,0000037,01,1,0007798
+      // 提取第一个逗号前的字符串
+      const dataStr = data.toString().trim();
+      const firstPart = dataStr.split(',')[0].trim();
+      
+      // 进行重量转换 0008522是8.522Kg
+      const weightNum = parseInt(firstPart, 10);
+      
+      if (!isNaN(weightNum)) {
+        // 转换为保留3位小数的字符串
+        const weightVal = (weightNum / 1000).toFixed(3);
+        const jsonToSend = { weight: weightVal };
+        
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          // 调用mainWindow.webContents.send('getWeightJson', JSON.parse(*data*))
+          mainWindow.webContents.send('getWeightJson', jsonToSend);
+          mainWindow.webContents.send('dealSocketStatus', true);
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing data:', e);
+    }
+  });
   ipcMain.handle('read-config-file', async (event, arg) => {
     if(!fs.existsSync("D://label_temp_data/config/config.json")){
       fs.writeFile("D://label_temp_data/config/config.json", JSON.stringify({machineName:""}), function(err) {});
