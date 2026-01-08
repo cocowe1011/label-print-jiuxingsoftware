@@ -184,18 +184,23 @@ app.on('ready', () => {
   client.on('data', (data) => {
     try {
       const dataStr = data.toString('ascii').replace(/[^\d,]/g, '').trim();
-      const firstPart = dataStr.split(',')[0].trim();
+      const parts = dataStr.split(',');
       
-      // 进行重量转换 0008522是8.522Kg
-      const weightNum = parseInt(firstPart, 10);
-      if (!isNaN(weightNum)) {
-        // 转换为保留3位小数的字符串
-        const weightVal = (weightNum / 1000).toFixed(3);
-        const jsonToSend = { weight: weightVal };
+      // 检查第三项（索引为2）是否为"02"
+      if (parts.length > 2 && parts[2].trim() === '02') {
+        const firstPart = parts[0].trim();
         
-        if (mainWindow && !mainWindow.isDestroyed()) {
-           mainWindow.webContents.send('getWeightJson', jsonToSend);
-           mainWindow.webContents.send('dealSocketStatus', true);
+        // 进行重量转换 0008522是8.522Kg
+        const weightNum = parseInt(firstPart, 10);
+        if (!isNaN(weightNum)) {
+          // 转换为保留3位小数的字符串
+          const weightVal = (weightNum / 1000).toFixed(3);
+          const jsonToSend = { weight: weightVal };
+          
+          if (mainWindow && !mainWindow.isDestroyed()) {
+             mainWindow.webContents.send('getWeightJson', jsonToSend);
+             mainWindow.webContents.send('dealSocketStatus', true);
+          }
         }
       }
     } catch (e) {
