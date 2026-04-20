@@ -173,12 +173,23 @@ app.on('ready', () => {
 
   client.on('close', () => {
     console.log('Client connection closed');
-    mainWindow.webContents.send('dealSocketStatus', false);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('dealSocketStatus', false);
+    }
+    
+    // 最简单的断线重连：延迟 5 秒后直接再次连接
+    setTimeout(() => {
+      console.log('尝试重新连接服务端...');
+      client.connect(PORT, HOST);
+    }, 5000);
   });
 
-  client.connect(PORT, HOST, () => {
+  // 将 connect 改为监听 'connect' 事件，保证重连成功时也能触发
+  client.on('connect', () => {
     console.log(`Connected to server: ${HOST}:${PORT}`);
-    mainWindow.webContents.send('dealSocketStatus', true);
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('dealSocketStatus', true);
+    }
   });
 
   client.on('data', (data) => {
@@ -207,6 +218,10 @@ app.on('ready', () => {
       console.error('Error parsing data:', e);
     }
   });
+
+  // 首次发起连接
+  client.connect(PORT, HOST);
+
   ipcMain.handle('read-config-file', async (event, arg) => {
     if(!fs.existsSync("D://label_temp_data/config/config.json")){
       fs.writeFile("D://label_temp_data/config/config.json", JSON.stringify({machineName:""}), function(err) {});
